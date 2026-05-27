@@ -15,11 +15,16 @@ import { Spacing } from '@/constants/theme';
 import { useBottomTabPadding } from '@/hooks/use-bottom-tab-padding';
 import {
   isDeepSeekConfigured,
-  sendChat,
+  streamChat,
   type ChatMessage,
 } from '@/services/deepseek';
 
+function createMessageId() {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
 const WELCOME_MESSAGE: ChatMessage = {
+  id: 'welcome',
   role: 'assistant',
   content: '你好！我是 DeepSeek 助手，有什么可以帮你的？',
 };
@@ -31,10 +36,14 @@ export default function ChatScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const listRef = useRef<FlatList<ChatMessage>>(null);
+  const scrollPendingRef = useRef(false);
 
   const scrollToEnd = useCallback(() => {
+    if (scrollPendingRef.current) return;
+    scrollPendingRef.current = true;
     requestAnimationFrame(() => {
       listRef.current?.scrollToEnd({ animated: true });
+      scrollPendingRef.current = false;
     });
   }, []);
 
@@ -42,8 +51,17 @@ export default function ChatScreen() {
     const trimmed = input.trim();
     if (!trimmed || loading) return;
 
-    const userMessage: ChatMessage = { role: 'user', content: trimmed };
-    const nextMessages = [...messages, userMessage];
+    const userMessage: ChatMessage = {
+      id: createMessageId(),
+      role: 'user',
+      content: trimmed,
+    };
+    const assistantPlaceholder: ChatMessage = {
+      id: createMessageId(),
+      role: 'assistant',
+      content: '',
+    };
+    const nextMessages = [...messages, userMessage, assistantPlaceholder];
 
     setMessages(nextMessages);
     setInput('');
@@ -52,12 +70,29 @@ export default function ChatScreen() {
     scrollToEnd();
 
     try {
-      const reply = await sendChat(nextMessages);
-      setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
-      scrollToEnd();
+      await streamChat(
+        [...messages, userMessage],
+        (chunk) => {
+          setMessages((prev) => {
+            const copy = [...prev];
+            const last = copy[copy.length - 1];
+            if (last?.role !== 'assistant') return prev;
+            copy[copy.length - 1] = { ...last, content: last.content + chunk };
+            return copy;
+          });
+          scrollToEnd();
+        },
+      );
     } catch (err) {
       const message = err instanceof Error ? err.message : '发送失败，请重试';
       setError(message);
+      setMessages((prev) => {
+        const last = prev[prev.length - 1];
+        if (last?.role === 'assistant' && !last.content) {
+          return prev.slice(0, -1);
+        }
+        return prev;
+      });
     } finally {
       setLoading(false);
     }
@@ -96,7 +131,8 @@ export default function ChatScreen() {
           <FlatList
             ref={listRef}
             data={messages}
-            keyExtractor={(_, index) => `${index}`}
+            extraData={messages}
+            keyExtractor={(item) => item.id ?? item.content}
             renderItem={({ item }) => (
               <MessageBubble role={item.role} content={item.content} />
             )}

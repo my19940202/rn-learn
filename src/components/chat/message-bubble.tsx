@@ -1,8 +1,12 @@
+import { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
+import Markdown from 'react-native-markdown-display';
 
+import { createMarkdownStyles } from '@/components/chat/markdown-styles';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import type { ChatMessage } from '@/services/deepseek';
 
 type MessageBubbleProps = {
@@ -11,7 +15,9 @@ type MessageBubbleProps = {
 };
 
 export function MessageBubble({ role, content }: MessageBubbleProps) {
+  const theme = useTheme();
   const isUser = role === 'user';
+  const markdownStyles = useMemo(() => createMarkdownStyles(theme), [theme]);
 
   return (
     <ThemedView
@@ -19,9 +25,17 @@ export function MessageBubble({ role, content }: MessageBubbleProps) {
       <ThemedView
         type={isUser ? 'backgroundSelected' : 'backgroundElement'}
         style={[styles.bubble, isUser ? styles.bubbleUser : styles.bubbleAssistant]}>
-        <ThemedText type="small" style={styles.text}>
-          {content}
-        </ThemedText>
+        {isUser ? (
+          <ThemedText type="small" style={styles.text}>
+            {content}
+          </ThemedText>
+        ) : content ? (
+          <Markdown style={markdownStyles}>{content}</Markdown>
+        ) : (
+          <ThemedText type="small" themeColor="textSecondary">
+            正在输入...
+          </ThemedText>
+        )}
       </ThemedView>
     </ThemedView>
   );
