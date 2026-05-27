@@ -25,6 +25,34 @@ In the output, you'll find options to open the app in a
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
+## AI Chat（DeepSeek）
+
+项目包含第三个 Tab **Chat**，支持与 DeepSeek 对话。
+
+1. 复制环境变量模板：
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. 在 `.env` 中填入你的 DeepSeek API Key：
+
+   ```bash
+   EXPO_PUBLIC_DEEPSEEK_API_KEY=sk-your-key-here
+   ```
+
+3. 重启 Expo（修改 `.env` 后必须重启 Metro）：
+
+   ```bash
+   npx expo start
+   ```
+
+4. 打开 **Chat** Tab，输入消息并发送。
+
+可选环境变量：`EXPO_PUBLIC_DEEPSEEK_API_URL`、`EXPO_PUBLIC_DEEPSEEK_MODEL`。
+
+> 注意：`EXPO_PUBLIC_*` 变量会打包进客户端，仅适合本地学习/开发。生产环境应通过后端代理转发 API 请求。
+
 ## Get a fresh project
 
 When you're ready, run:
