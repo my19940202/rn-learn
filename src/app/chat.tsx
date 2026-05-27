@@ -11,7 +11,8 @@ import { ChatInput } from '@/components/chat/chat-input';
 import { MessageBubble } from '@/components/chat/message-bubble';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { BottomTabInset, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
+import { useBottomTabPadding } from '@/hooks/use-bottom-tab-padding';
 import {
   isDeepSeekConfigured,
   sendChat,
@@ -24,6 +25,7 @@ const WELCOME_MESSAGE: ChatMessage = {
 };
 
 export default function ChatScreen() {
+  const bottomPadding = useBottomTabPadding(Spacing.two);
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -103,7 +105,7 @@ export default function ChatScreen() {
             keyboardShouldPersistTaps="handled"
           />
 
-          <ThemedView style={styles.inputArea}>
+          <ThemedView style={{ paddingBottom: bottomPadding }}>
             <ChatInput
               value={input}
               onChangeText={setInput}
@@ -154,8 +156,5 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.two,
     paddingBottom: Spacing.two,
     flexGrow: 1,
-  },
-  inputArea: {
-    paddingBottom: BottomTabInset + Spacing.two,
   },
 });

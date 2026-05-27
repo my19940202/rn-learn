@@ -13,11 +13,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { BottomTabInset, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
+import { useBottomTabPadding } from '@/hooks/use-bottom-tab-padding';
 
 const BRAND_BLUE = '#208AEF';
 
 export default function LoginScreen() {
+  const bottomPadding = useBottomTabPadding();
   const [account, setAccount] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -102,9 +104,9 @@ export default function LoginScreen() {
             </View>
           </View>
 
-          <View style={styles.footer}>
+          <View style={[styles.footer, { paddingBottom: bottomPadding }]}>
             <Link href="/explore/user-agreement" asChild>
-              <Pressable hitSlop={8}>
+              <Pressable hitSlop={12} style={styles.agreementPressable}>
                 <ThemedText style={styles.agreementLink}>用户协议</ThemedText>
               </Pressable>
             </Link>
@@ -125,7 +127,6 @@ const styles = StyleSheet.create({
   keyboardView: {
     flex: 1,
     paddingHorizontal: Spacing.four,
-    paddingBottom: BottomTabInset + Spacing.three,
   },
   logoSection: {
     paddingTop: Spacing.six,
@@ -205,6 +206,10 @@ const styles = StyleSheet.create({
     marginTop: 'auto',
     alignItems: 'center',
     paddingTop: Spacing.four,
+  },
+  agreementPressable: {
+    paddingVertical: Spacing.two,
+    paddingHorizontal: Spacing.three,
   },
   agreementLink: {
     color: BRAND_BLUE,
