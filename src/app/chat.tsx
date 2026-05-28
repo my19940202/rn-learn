@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -6,37 +6,68 @@ import {
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useChat } from '@ai-sdk/react';
+import { fetch as expoFetch } from 'expo/fetch';
+import type { UIMessage } from 'ai';
 
 import { ChatInput } from '@/components/chat/chat-input';
 import { MessageBubble } from '@/components/chat/message-bubble';
+import { ModelPicker } from '@/components/chat/model-picker';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { DEFAULT_MODEL } from '@/constants/models';
 import { Spacing } from '@/constants/theme';
+import { useAuth } from '@/context/auth-context';
 import { useBottomTabPadding } from '@/hooks/use-bottom-tab-padding';
-import {
-  isDeepSeekConfigured,
-  streamChat,
-  type ChatMessage,
-} from '@/services/deepseek';
+import { getChatApiUrl, uiMessagesToApiMessages } from '@/services/chat-api';
+import { OpenAISSEChatTransport } from '@/services/openai-sse-chat-transport';
 
-function createMessageId() {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-}
-
-const WELCOME_MESSAGE: ChatMessage = {
+const WELCOME_MESSAGE: UIMessage = {
   id: 'welcome',
   role: 'assistant',
-  content: '你好！我是 DeepSeek 助手，有什么可以帮你的？',
+  parts: [{ type: 'text', text: '你好！我是 AI 助手，有什么可以帮你的？' }],
 };
+
+function getMessageText(message: UIMessage) {
+  return message.parts
+    .filter((part) => part.type === 'text')
+    .map((part) => part.text)
+    .join('');
+}
 
 export default function ChatScreen() {
   const bottomPadding = useBottomTabPadding(Spacing.two);
-  const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
+  const { token } = useAuth();
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const listRef = useRef<FlatList<ChatMessage>>(null);
+  const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL);
+  const listRef = useRef<FlatList<UIMessage>>(null);
   const scrollPendingRef = useRef(false);
+
+  const transport = useMemo(
+    () =>
+      new OpenAISSEChatTransport({
+        api: getChatApiUrl(),
+        fetch: expoFetch as unknown as typeof globalThis.fetch,
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        body: { model: selectedModel },
+        prepareSendMessagesRequest: ({ headers, body, messages }) => ({
+          headers,
+          body: {
+            ...body,
+            model: selectedModel,
+            messages: uiMessagesToApiMessages(messages),
+          },
+        }),
+      }),
+    [selectedModel, token],
+  );
+
+  const { messages, sendMessage, status, error } = useChat({
+    transport,
+    messages: [WELCOME_MESSAGE],
+  });
+
+  const loading = status === 'streaming' || status === 'submitted';
 
   const scrollToEnd = useCallback(() => {
     if (scrollPendingRef.current) return;
@@ -51,54 +82,10 @@ export default function ChatScreen() {
     const trimmed = input.trim();
     if (!trimmed || loading) return;
 
-    const userMessage: ChatMessage = {
-      id: createMessageId(),
-      role: 'user',
-      content: trimmed,
-    };
-    const assistantPlaceholder: ChatMessage = {
-      id: createMessageId(),
-      role: 'assistant',
-      content: '',
-    };
-    const nextMessages = [...messages, userMessage, assistantPlaceholder];
-
-    setMessages(nextMessages);
     setInput('');
-    setError(null);
-    setLoading(true);
+    await sendMessage({ text: trimmed });
     scrollToEnd();
-
-    try {
-      await streamChat(
-        [...messages, userMessage],
-        (chunk) => {
-          setMessages((prev) => {
-            const copy = [...prev];
-            const last = copy[copy.length - 1];
-            if (last?.role !== 'assistant') return prev;
-            copy[copy.length - 1] = { ...last, content: last.content + chunk };
-            return copy;
-          });
-          scrollToEnd();
-        },
-      );
-    } catch (err) {
-      const message = err instanceof Error ? err.message : '发送失败，请重试';
-      setError(message);
-      setMessages((prev) => {
-        const last = prev[prev.length - 1];
-        if (last?.role === 'assistant' && !last.content) {
-          return prev.slice(0, -1);
-        }
-        return prev;
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [input, loading, messages, scrollToEnd]);
-
-  const configured = isDeepSeekConfigured();
+  }, [input, loading, scrollToEnd, sendMessage]);
 
   return (
     <ThemedView style={styles.container}>
@@ -107,18 +94,15 @@ export default function ChatScreen() {
           <ThemedText type="subtitle" style={styles.title}>
             Chat
           </ThemedText>
-          {!configured && (
-            <ThemedView type="backgroundElement" style={styles.configHint}>
-              <ThemedText type="small" themeColor="textSecondary">
-                请在项目根目录创建 .env 并设置 EXPO_PUBLIC_DEEPSEEK_API_KEY，然后重启
-                Expo。
-              </ThemedText>
-            </ThemedView>
-          )}
+          <ModelPicker
+            value={selectedModel}
+            onChange={setSelectedModel}
+            disabled={loading}
+          />
           {error && (
             <ThemedView style={styles.errorBanner}>
               <ThemedText type="small" style={styles.errorText}>
-                {error}
+                {error.message}
               </ThemedText>
             </ThemedView>
           )}
@@ -127,14 +111,17 @@ export default function ChatScreen() {
         <KeyboardAvoidingView
           style={styles.keyboardView}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}>
+          keyboardVerticalOffset={0}>
           <FlatList
             ref={listRef}
             data={messages}
             extraData={messages}
-            keyExtractor={(item) => item.id ?? item.content}
+            keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
-              <MessageBubble role={item.role} content={item.content} />
+              <MessageBubble
+                role={item.role === 'user' ? 'user' : 'assistant'}
+                content={getMessageText(item)}
+              />
             )}
             contentContainerStyle={styles.messageList}
             onContentSizeChange={scrollToEnd}
@@ -147,7 +134,7 @@ export default function ChatScreen() {
               onChangeText={setInput}
               onSend={handleSend}
               loading={loading}
-              disabled={!configured}
+              disabled={!token}
             />
           </ThemedView>
         </KeyboardAvoidingView>
@@ -172,10 +159,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     lineHeight: 36,
-  },
-  configHint: {
-    padding: Spacing.three,
-    borderRadius: Spacing.three,
   },
   errorBanner: {
     backgroundColor: '#FEE2E2',

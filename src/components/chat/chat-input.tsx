@@ -1,9 +1,24 @@
-import { ActivityIndicator, Pressable, StyleSheet, TextInput } from 'react-native';
+import { useEffect, useState, type ComponentType } from 'react';
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  TextInput,
+} from 'react-native';
+import { requireOptionalNativeModule } from 'expo';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+
+type SpeechMicButtonProps = {
+  value: string;
+  onChangeText: (text: string) => void;
+  disabled?: boolean;
+  loading?: boolean;
+  onListeningChange: (listening: boolean) => void;
+};
 
 type ChatInputProps = {
   value: string;
@@ -16,10 +31,37 @@ type ChatInputProps = {
 export function ChatInput({ value, onChangeText, onSend, loading, disabled }: ChatInputProps) {
   const theme = useTheme();
   const canSend = value.trim().length > 0 && !loading && !disabled;
+  const [isListening, setIsListening] = useState(false);
+  const [SpeechMic, setSpeechMic] = useState<ComponentType<SpeechMicButtonProps> | null>(null);
+
+  useEffect(() => {
+    const nativeModule = requireOptionalNativeModule('ExpoSpeechRecognition');
+    if (!nativeModule) return;
+
+    import('./speech-mic-button')
+      .then((mod) => setSpeechMic(() => mod.SpeechMicButton))
+      .catch(() => {
+        // 原生模块存在但 JS 包加载失败时忽略
+      });
+  }, []);
 
   return (
     <ThemedView style={styles.container}>
+      {isListening && (
+        <ThemedText type="small" themeColor="textSecondary" style={styles.listeningHint}>
+          正在听…
+        </ThemedText>
+      )}
       <ThemedView type="backgroundElement" style={styles.inputWrapper}>
+        {SpeechMic ? (
+          <SpeechMic
+            value={value}
+            onChangeText={onChangeText}
+            disabled={disabled}
+            loading={loading}
+            onListeningChange={setIsListening}
+          />
+        ) : null}
         <TextInput
           style={[styles.input, { color: theme.text }]}
           value={value}
@@ -28,7 +70,7 @@ export function ChatInput({ value, onChangeText, onSend, loading, disabled }: Ch
           placeholderTextColor={theme.textSecondary}
           multiline
           maxLength={2000}
-          editable={!loading && !disabled}
+          editable={!loading && !disabled && !isListening}
           returnKeyType="send"
           blurOnSubmit={false}
         />
@@ -60,12 +102,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingTop: Spacing.two,
     paddingBottom: Spacing.two,
+    gap: Spacing.one,
+  },
+  listeningHint: {
+    paddingHorizontal: Spacing.one,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: Spacing.two,
-    paddingLeft: Spacing.three,
+    paddingLeft: Spacing.two,
     paddingRight: Spacing.two,
     paddingVertical: Spacing.two,
     borderRadius: Spacing.four,

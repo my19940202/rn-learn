@@ -7,10 +7,10 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import type { ChatMessage } from '@/services/deepseek';
+import type { ChatRole } from '@/types/chat';
 
 type MessageBubbleProps = {
-  role: ChatMessage['role'];
+  role: ChatRole;
   content: string;
 };
 

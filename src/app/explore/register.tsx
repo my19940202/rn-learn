@@ -20,66 +20,39 @@ import { useBottomTabPadding } from '@/hooks/use-bottom-tab-padding';
 
 const BRAND_BLUE = '#208AEF';
 
-export default function ProfileScreen() {
+export default function RegisterScreen() {
   const bottomPadding = useBottomTabPadding();
   const router = useRouter();
-  const { user, isAuthenticated, login, logout } = useAuth();
-  const [account, setAccount] = useState('');
+  const { register } = useAuth();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleLogin = async () => {
-    if (!account.trim() || !password) {
+  const handleRegister = async () => {
+    if (!email.trim() || !password) {
       setError('请输入邮箱和密码');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('密码至少 6 位');
       return;
     }
 
     setLoading(true);
     setError(null);
     try {
-      await login(account.trim(), password);
+      await register(email.trim(), password, name.trim() || undefined);
       router.replace('/');
     } catch (err) {
-      setError(err instanceof Error ? err.message : '登录失败');
+      setError(err instanceof Error ? err.message : '注册失败');
     } finally {
       setLoading(false);
     }
   };
-
-  const handleLogout = async () => {
-    await logout();
-    router.replace('/explore');
-  };
-
-  if (isAuthenticated && user) {
-    return (
-      <ThemedView style={styles.container}>
-        <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-          <View style={[styles.profileSection, { paddingBottom: bottomPadding }]}>
-            <View style={styles.logoWrapper}>
-              <Image
-                source={require('@/assets/images/splash-icon.png')}
-                style={styles.logo}
-                contentFit="contain"
-              />
-            </View>
-            <ThemedText type="subtitle" style={styles.profileName}>
-              {user.name || '用户'}
-            </ThemedText>
-            <ThemedText themeColor="textSecondary">{user.email}</ThemedText>
-
-            <Pressable
-              style={({ pressed }) => [styles.logoutButton, pressed && styles.pressed]}
-              onPress={handleLogout}>
-              <ThemedText style={styles.logoutButtonText}>退出登录</ThemedText>
-            </Pressable>
-          </View>
-        </SafeAreaView>
-      </ThemedView>
-    );
-  }
 
   return (
     <ThemedView style={styles.container}>
@@ -88,7 +61,6 @@ export default function ProfileScreen() {
           style={styles.keyboardView}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <View style={styles.logoSection}>
-            <View style={styles.divider} />
             <View style={styles.logoWrapper}>
               <Image
                 source={require('@/assets/images/splash-icon.png')}
@@ -96,17 +68,31 @@ export default function ProfileScreen() {
                 contentFit="contain"
               />
             </View>
-            <View style={styles.divider} />
+            <ThemedText type="subtitle" style={styles.title}>
+              注册账号
+            </ThemedText>
           </View>
 
           <View style={styles.formSection}>
             <View style={styles.inputGroup}>
               <TextInput
                 style={styles.input}
-                placeholder="邮箱/手机号"
+                placeholder="昵称（可选）"
                 placeholderTextColor="#B0B4BA"
-                value={account}
-                onChangeText={setAccount}
+                value={name}
+                onChangeText={setName}
+                returnKeyType="next"
+              />
+              <View style={styles.inputDivider} />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <TextInput
+                style={styles.input}
+                placeholder="邮箱"
+                placeholderTextColor="#B0B4BA"
+                value={email}
+                onChangeText={setEmail}
                 autoCapitalize="none"
                 keyboardType="email-address"
                 returnKeyType="next"
@@ -118,13 +104,13 @@ export default function ProfileScreen() {
               <View style={styles.passwordRow}>
                 <TextInput
                   style={[styles.input, styles.passwordInput]}
-                  placeholder="密码"
+                  placeholder="密码（至少 6 位）"
                   placeholderTextColor="#B0B4BA"
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry={!showPassword}
                   returnKeyType="done"
-                  onSubmitEditing={handleLogin}
+                  onSubmitEditing={handleRegister}
                 />
                 <Pressable
                   onPress={() => setShowPassword((prev) => !prev)}
@@ -148,33 +134,27 @@ export default function ProfileScreen() {
           )}
 
           <View style={styles.actionSection}>
-            <View style={styles.divider} />
             <Pressable
-              style={({ pressed }) => [styles.loginButton, pressed && styles.pressed]}
-              onPress={handleLogin}
+              style={({ pressed }) => [styles.registerButton, pressed && styles.pressed]}
+              onPress={handleRegister}
               disabled={loading}>
               {loading ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
-                <ThemedText style={styles.loginButtonText}>登录</ThemedText>
+                <ThemedText style={styles.registerButtonText}>注册并登录</ThemedText>
               )}
             </Pressable>
 
-            <View style={styles.linkRow}>
-              <Pressable hitSlop={8}>
-                <ThemedText themeColor="textSecondary">忘记密码?</ThemedText>
+            <Link href="/explore" asChild>
+              <Pressable hitSlop={8} style={styles.loginLinkWrap}>
+                <ThemedText style={styles.loginLink}>已有账号？去登录</ThemedText>
               </Pressable>
-              <Link href="/explore/register" asChild>
-                <Pressable hitSlop={8}>
-                  <ThemedText style={styles.registerLink}>注册账号</ThemedText>
-                </Pressable>
-              </Link>
-            </View>
+            </Link>
           </View>
 
           <View style={[styles.footer, { paddingBottom: bottomPadding }]}>
             <Link href="/explore/user-agreement" asChild>
-              <Pressable hitSlop={12} style={styles.agreementPressable}>
+              <Pressable hitSlop={12}>
                 <ThemedText style={styles.agreementLink}>用户协议</ThemedText>
               </Pressable>
             </Link>
@@ -186,132 +166,59 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-  },
-  keyboardView: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-  },
-  profileSection: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
+  container: { flex: 1 },
+  safeArea: { flex: 1 },
+  keyboardView: { flex: 1, paddingHorizontal: Spacing.four },
+  logoSection: {
+    paddingTop: Spacing.five,
+    paddingBottom: Spacing.four,
     alignItems: 'center',
-    justifyContent: 'center',
     gap: Spacing.three,
   },
-  profileName: {
-    marginTop: Spacing.three,
-  },
-  logoSection: {
-    paddingTop: Spacing.six,
-    paddingBottom: Spacing.five,
-  },
-  logoWrapper: {
-    alignItems: 'center',
-    paddingVertical: Spacing.five,
-  },
-  logo: {
-    width: 72,
-    height: 72,
-    borderRadius: 16,
-  },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: '#E8E8EC',
-  },
-  formSection: {
-    gap: Spacing.four,
-    paddingVertical: Spacing.four,
-  },
-  inputGroup: {
-    gap: Spacing.two,
-  },
+  logoWrapper: { alignItems: 'center' },
+  logo: { width: 64, height: 64, borderRadius: 16 },
+  title: { textAlign: 'center' },
+  formSection: { gap: Spacing.four, paddingVertical: Spacing.two },
+  inputGroup: { gap: Spacing.two },
   input: {
     fontSize: 16,
     lineHeight: 24,
     paddingVertical: Spacing.two,
     color: '#1C2024',
   },
-  passwordRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  passwordInput: {
-    flex: 1,
-  },
-  eyeButton: {
-    padding: Spacing.one,
-  },
-  eyeText: {
-    fontSize: 14,
-  },
+  passwordRow: { flexDirection: 'row', alignItems: 'center' },
+  passwordInput: { flex: 1 },
+  eyeButton: { padding: Spacing.one },
+  eyeText: { fontSize: 14 },
   inputDivider: {
     height: StyleSheet.hairlineWidth,
     backgroundColor: '#E8E8EC',
   },
-  actionSection: {
-    paddingTop: Spacing.four,
-    gap: Spacing.four,
-  },
-  loginButton: {
+  actionSection: { paddingTop: Spacing.four, gap: Spacing.four },
+  registerButton: {
     backgroundColor: BRAND_BLUE,
     borderRadius: 8,
     paddingVertical: 14,
     alignItems: 'center',
   },
-  logoutButton: {
-    marginTop: Spacing.five,
-    backgroundColor: '#FEE2E2',
-    borderRadius: 8,
-    paddingVertical: 14,
-    paddingHorizontal: Spacing.six,
-    alignItems: 'center',
-  },
-  loginButtonText: {
+  registerButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },
-  logoutButtonText: {
-    color: '#B91C1C',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  pressed: {
-    opacity: 0.85,
-  },
-  linkRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  registerLink: {
-    color: BRAND_BLUE,
-    fontSize: 14,
-  },
+  pressed: { opacity: 0.85 },
+  loginLinkWrap: { alignItems: 'center' },
+  loginLink: { color: BRAND_BLUE, fontSize: 14 },
   footer: {
     marginTop: 'auto',
     alignItems: 'center',
     paddingTop: Spacing.four,
   },
-  agreementPressable: {
-    paddingVertical: Spacing.two,
-    paddingHorizontal: Spacing.three,
-  },
-  agreementLink: {
-    color: BRAND_BLUE,
-    fontSize: 14,
-  },
+  agreementLink: { color: BRAND_BLUE, fontSize: 14 },
   errorBanner: {
     backgroundColor: '#FEE2E2',
     padding: Spacing.two,
     borderRadius: Spacing.two,
   },
-  errorText: {
-    color: '#B91C1C',
-  },
+  errorText: { color: '#B91C1C' },
 });
