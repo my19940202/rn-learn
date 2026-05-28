@@ -18,7 +18,8 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.rnlearn"
     },
     "web": {
       "output": "static",
@@ -34,13 +35,6 @@
             "image": "./assets/images/splash-icon.png",
             "imageWidth": 76
           }
-        }
-      ],
-      [
-        "expo-speech-recognition",
-        {
-          "microphonePermission": "需要麦克风权限以进行语音输入",
-          "speechRecognitionPermission": "需要语音识别权限"
         }
       ]
     ],

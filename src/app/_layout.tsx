@@ -18,14 +18,15 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isLoading) return;
 
-    const inExplore = segments[0] === 'explore';
+    const segment = segments[0];
+    const isPublicRoute = segment === 'explore' || segment === 'chat';
 
-    if (!isAuthenticated && !inExplore) {
+    if (!isAuthenticated && !isPublicRoute) {
       router.replace('/explore');
       return;
     }
 
-    if (isAuthenticated && inExplore && segments.length === 1) {
+    if (isAuthenticated && segment === 'explore' && segments.length === 1) {
       // 已登录用户访问 explore 根路径时留在「我的」页（展示资料）
     }
   }, [isAuthenticated, isLoading, router, segments]);

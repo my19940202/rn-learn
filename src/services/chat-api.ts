@@ -63,7 +63,11 @@ export async function fetchCurrentUser(token: string): Promise<AuthUser> {
 
 export function uiMessagesToApiMessages(messages: UIMessage[]) {
   return messages
-    .filter((message) => message.role === 'user' || message.role === 'assistant')
+    .filter(
+      (message) =>
+        message.id !== 'welcome' &&
+        (message.role === 'user' || message.role === 'assistant'),
+    )
     .map((message) => ({
       role: message.role as 'user' | 'assistant',
       content: message.parts
