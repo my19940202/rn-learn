@@ -1,5 +1,6 @@
 import { useChat } from '@ai-sdk/react';
 import type { UIMessage } from 'ai';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { fetch as expoFetch } from 'expo/fetch';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -11,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ChatInput } from '@/components/chat/chat-input';
+import { ConversationHistory } from '@/components/chat/conversation-history';
 import { GuestModelBanner } from '@/components/chat/guest-model-banner';
 import { MessageBubble } from '@/components/chat/message-bubble';
 import { ModelPicker } from '@/components/chat/model-picker';
@@ -19,11 +21,17 @@ import { ThemedView } from '@/components/themed-view';
 import {
   GUEST_MODEL,
   LOGGED_IN_DEFAULT_MODEL,
+  getModelById,
 } from '@/constants/models';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useBottomTabPadding } from '@/hooks/use-bottom-tab-padding';
-import { getChatApiUrl, uiMessagesToApiMessages } from '@/services/chat-api';
+import {
+  getChatApiUrl,
+  uiMessagesToApiMessages,
+  fetchConversationDetail,
+  type Conversation,
+} from '@/services/chat-api';
 import { OpenAISSEChatTransport } from '@/services/openai-sse-chat-transport';
 
 const GUEST_WELCOME_MESSAGE: UIMessage = {
@@ -52,14 +60,33 @@ function getMessageText(message: UIMessage) {
 
 export default function ChatScreen() {
   const bottomPadding = useBottomTabPadding(Spacing.two);
+  const router = useRouter();
   const { token, user } = useAuth();
   const isAuthenticated = !!token;
+  const params = useLocalSearchParams<{ model?: string }>();
   const [input, setInput] = useState('');
   const [selectedModel, setSelectedModel] = useState(
     isAuthenticated ? LOGGED_IN_DEFAULT_MODEL : GUEST_MODEL,
   );
+  const [historyVisible, setHistoryVisible] = useState(false);
+  const [chatSessionId, setChatSessionId] = useState('default');
+  const [loadedMessages, setLoadedMessages] = useState<UIMessage[] | null>(null);
   const listRef = useRef<FlatList<UIMessage>>(null);
   const scrollPendingRef = useRef(false);
+  const appliedModelParam = useRef<string | null>(null);
+
+  useEffect(() => {
+    const modelParam = params.model;
+    if (modelParam && modelParam !== appliedModelParam.current && isAuthenticated) {
+      const modelDef = getModelById(modelParam);
+      if (modelDef && (!modelDef.requiresAuth || isAuthenticated)) {
+        appliedModelParam.current = modelParam;
+        setSelectedModel(modelParam);
+        setLoadedMessages(null);
+        setChatSessionId(`model-${Date.now()}`);
+      }
+    }
+  }, [params.model, isAuthenticated]);
 
   const effectiveModel = isAuthenticated ? selectedModel : GUEST_MODEL;
 
@@ -115,8 +142,9 @@ export default function ChatScreen() {
     : [GUEST_WELCOME_MESSAGE];
 
   const { messages, sendMessage, status, error } = useChat({
+    id: chatSessionId,
     transport,
-    messages: initialMessages,
+    messages: loadedMessages ?? initialMessages,
   });
 
   const loading = status === 'streaming' || status === 'submitted';
@@ -139,6 +167,32 @@ export default function ChatScreen() {
     scrollToEnd();
   }, [input, loading, scrollToEnd, sendMessage]);
 
+  const handleHistoryPress = useCallback(() => {
+    if (!isAuthenticated) {
+      router.push('/explore');
+      return;
+    }
+    setHistoryVisible(true);
+  }, [isAuthenticated, router]);
+
+  const handleSelectConversation = useCallback(
+    async (conv: Conversation) => {
+      if (!token) return;
+      try {
+        const detail = await fetchConversationDetail(token, conv.id);
+        const uiMessages: UIMessage[] = detail.messages.map((msg) => ({
+          id: msg.id,
+          role: msg.role as 'user' | 'assistant',
+          parts: [{ type: 'text' as const, text: msg.content }],
+        }));
+        setSelectedModel(conv.model);
+        setLoadedMessages(uiMessages.length > 0 ? uiMessages : null);
+        setChatSessionId(`conv-${conv.id}`);
+      } catch {}
+    },
+    [token],
+  );
+
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
@@ -148,6 +202,7 @@ export default function ChatScreen() {
             onChange={setSelectedModel}
             isAuthenticated={isAuthenticated}
             disabled={loading}
+            onHistoryPress={handleHistoryPress}
           />
           {error && (
             <ThemedView style={styles.errorBanner}>
@@ -191,6 +246,15 @@ export default function ChatScreen() {
           </ThemedView>
         </KeyboardAvoidingView>
       </SafeAreaView>
+
+      {isAuthenticated && token && (
+        <ConversationHistory
+          visible={historyVisible}
+          onClose={() => setHistoryVisible(false)}
+          onSelect={handleSelectConversation}
+          token={token}
+        />
+      )}
     </ThemedView>
   );
 }

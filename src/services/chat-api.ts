@@ -61,6 +61,47 @@ export async function fetchCurrentUser(token: string): Promise<AuthUser> {
   return data.user;
 }
 
+export type Conversation = {
+  id: string;
+  title: string;
+  model: string;
+  created_at: number;
+  updated_at: number;
+};
+
+export type ConversationMessage = {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  created_at: number;
+};
+
+export async function fetchConversations(token: string): Promise<Conversation[]> {
+  const res = await fetch(`${API_BASE}/api/conversations`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const data = await parseJsonResponse<{ conversations: Conversation[] }>(res);
+  return data.conversations;
+}
+
+export async function fetchConversationDetail(
+  token: string,
+  conversationId: string,
+): Promise<{ conversation: Conversation; messages: ConversationMessage[] }> {
+  const res = await fetch(`${API_BASE}/api/conversations/${conversationId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return parseJsonResponse<{ conversation: Conversation; messages: ConversationMessage[] }>(res);
+}
+
+export async function deleteConversation(token: string, conversationId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/conversations/${conversationId}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  await parseJsonResponse<{ success: boolean }>(res);
+}
+
 export function uiMessagesToApiMessages(messages: UIMessage[]) {
   return messages
     .filter(

@@ -19,7 +19,8 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
     if (isLoading) return;
 
     const segment = segments[0];
-    const isPublicRoute = segment === 'explore' || segment === 'chat';
+    const isPublicRoute =
+      !segment || segment === 'explore' || segment === 'chat';
 
     if (!isAuthenticated && !isPublicRoute) {
       router.replace('/explore');

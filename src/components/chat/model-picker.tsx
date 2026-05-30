@@ -1,5 +1,5 @@
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
 import {
   Modal,
@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ModelIcon } from '@/components/chat/model-icon';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { SystemIcon } from '@/components/ui/system-icon';
 import { AVAILABLE_MODELS, getModelById } from '@/constants/models';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -23,6 +24,7 @@ type ModelPickerProps = {
   onChange: (modelId: string) => void;
   isAuthenticated: boolean;
   disabled?: boolean;
+  onHistoryPress: () => void;
 };
 
 export function ModelPicker({
@@ -30,6 +32,7 @@ export function ModelPicker({
   onChange,
   isAuthenticated,
   disabled,
+  onHistoryPress,
 }: ModelPickerProps) {
   const [visible, setVisible] = useState(false);
   const theme = useTheme();
@@ -56,25 +59,35 @@ export function ModelPicker({
 
   return (
     <>
-      <Pressable
-        onPress={openModal}
-        disabled={disabled}
-        style={({ pressed }) => [
-          styles.trigger,
-          disabled && styles.triggerDisabled,
-          pressed && !disabled && styles.pressed,
-        ]}>
-        <ModelIcon source={currentModel.icon} size={28} />
-        <ThemedText type="subtitle" style={styles.triggerLabel}>
-          {currentModel.label}
-        </ThemedText>
-        <SymbolView
-          name={{ ios: 'chevron.down', android: 'expand_more', web: 'expand_more' }}
-          size={14}
-          weight="semibold"
-          tintColor={theme.textSecondary}
-        />
-      </Pressable>
+      <View style={styles.triggerRow}>
+        <Pressable
+          onPress={openModal}
+          disabled={disabled}
+          style={({ pressed }) => [
+            styles.trigger,
+            disabled && styles.triggerDisabled,
+            pressed && !disabled && styles.pressed,
+          ]}>
+          <ModelIcon source={currentModel.icon} size={28} />
+          <ThemedText type="subtitle" style={styles.triggerLabel}>
+            {currentModel.label}
+          </ThemedText>
+        </Pressable>
+
+        <Pressable
+          onPress={onHistoryPress}
+          hitSlop={8}
+          style={({ pressed }) => [
+            styles.historyButton,
+            pressed && styles.pressed,
+          ]}>
+          <Image
+            source={require('@/assets/images/history.png')}
+            style={styles.historyIcon}
+            contentFit="contain"
+          />
+        </Pressable>
+      </View>
 
       <Modal visible={visible} animationType="slide" transparent onRequestClose={closeModal}>
         <TouchableWithoutFeedback onPress={closeModal}>
@@ -88,11 +101,7 @@ export function ModelPicker({
                 <ThemedView style={styles.sheetHeader}>
                   <ThemedText type="subtitle">选择模型</ThemedText>
                   <Pressable onPress={closeModal} hitSlop={8}>
-                    <SymbolView
-                      name={{ ios: 'xmark', android: 'close', web: 'close' }}
-                      size={18}
-                      tintColor={theme.textSecondary}
-                    />
+                    <SystemIcon name="close" size={18} color={theme.textSecondary} />
                   </Pressable>
                 </ThemedView>
 
@@ -131,11 +140,11 @@ export function ModelPicker({
                           )}
                         </ThemedView>
                         {selected && (
-                          <SymbolView
-                            name={{ ios: 'checkmark', android: 'check', web: 'check' }}
+                          <SystemIcon
+                            name="check"
                             size={18}
                             weight="semibold"
-                            tintColor={theme.text}
+                            color={theme.text}
                           />
                         )}
                       </Pressable>
@@ -152,10 +161,26 @@ export function ModelPicker({
 }
 
 const styles = StyleSheet.create({
+  triggerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   trigger: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two,
+  },
+  historyButton: {
+    padding: Spacing.one,
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  historyIcon: {
+    width: 22,
+    height: 22,
   },
   triggerDisabled: {
     opacity: 0.5,

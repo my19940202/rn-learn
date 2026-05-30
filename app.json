@@ -1,15 +1,15 @@
 {
   "expo": {
-    "name": "rn-learn",
-    "slug": "rn-learn",
+    "name": "AI-Link",
+    "slug": "ailink",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "rnlearn",
+    "scheme": "ailink",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.anonymous.rn-learn"
+      "bundleIdentifier": "com.anonymous.ailink"
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +19,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.rnlearn"
+      "package": "com.anonymous.ailink"
     },
     "web": {
       "output": "static",
