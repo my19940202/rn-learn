@@ -26,10 +26,11 @@ import {
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useBottomTabPadding } from '@/hooks/use-bottom-tab-padding';
+import { useKeyboardVisible } from '@/hooks/use-keyboard-visible';
 import {
+  fetchConversationDetail,
   getChatApiUrl,
   uiMessagesToApiMessages,
-  fetchConversationDetail,
   type Conversation,
 } from '@/services/chat-api';
 import { OpenAISSEChatTransport } from '@/services/openai-sse-chat-transport';
@@ -60,6 +61,7 @@ function getMessageText(message: UIMessage) {
 
 export default function ChatScreen() {
   const bottomPadding = useBottomTabPadding(Spacing.two);
+  const { visible: keyboardVisible, height: keyboardHeight } = useKeyboardVisible();
   const router = useRouter();
   const { token, user } = useAuth();
   const isAuthenticated = !!token;
@@ -217,7 +219,7 @@ export default function ChatScreen() {
 
         <KeyboardAvoidingView
           style={styles.keyboardView}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           keyboardVerticalOffset={Platform.OS === 'ios' ? Spacing.three : 0}>
           <FlatList
             ref={listRef}
@@ -236,7 +238,14 @@ export default function ChatScreen() {
             keyboardShouldPersistTaps="handled"
           />
 
-          <ThemedView style={{ paddingBottom: bottomPadding }}>
+          <ThemedView
+            style={{
+              paddingBottom: keyboardVisible
+                ? Platform.OS === 'android'
+                  ? (keyboardHeight + 80)
+                  : 0
+                : bottomPadding,
+            }}>
             <ChatInput
               value={input}
               onChangeText={setInput}
