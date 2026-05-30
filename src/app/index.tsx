@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -10,10 +10,7 @@ import { AVAILABLE_MODELS } from '@/constants/models';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useBottomTabPadding } from '@/hooks/use-bottom-tab-padding';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
-
-const BRAND_BLUE = '#208AEF';
 
 const FEATURES = [
   '免登录即可使用 DeepSeek 智能对话',
@@ -24,13 +21,8 @@ const FEATURES = [
 export default function HomeScreen() {
   const bottomPadding = useBottomTabPadding(Spacing.three);
   const { isAuthenticated } = useAuth();
-  const scheme = useColorScheme();
-  const isDark = scheme === 'dark';
   const theme = useTheme();
   const router = useRouter();
-
-  const primaryButtonTextColor = '#FFFFFF';
-  const secondaryButtonColor = isDark ? '#7AB8FF' : BRAND_BLUE;
 
   const handleModelPress = (modelId: string, requiresAuth: boolean) => {
     if (!isAuthenticated && requiresAuth) {
@@ -103,29 +95,6 @@ export default function HomeScreen() {
                 </ThemedText>
               </ThemedView>
             ))}
-          </ThemedView>
-
-          <ThemedView style={styles.actions}>
-            <Link href="/chat" asChild>
-              <Pressable style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed]}>
-                <ThemedText style={[styles.primaryButtonText, { color: primaryButtonTextColor }]}>
-                  开始 Chat
-                </ThemedText>
-              </Pressable>
-            </Link>
-
-            <Link href="/explore" asChild>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.secondaryButton,
-                  { borderColor: secondaryButtonColor },
-                  pressed && styles.pressed,
-                ]}>
-                <ThemedText style={[styles.secondaryButtonText, { color: secondaryButtonColor }]}>
-                  {isAuthenticated ? '我的账户' : '点击登录'}
-                </ThemedText>
-              </Pressable>
-            </Link>
           </ThemedView>
         </ScrollView>
       </SafeAreaView>
@@ -213,43 +182,6 @@ const styles = StyleSheet.create({
   featureText: {
     flex: 1,
     lineHeight: 22,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: Spacing.three,
-    paddingTop: Spacing.two,
-  },
-  primaryButton: {
-    backgroundColor: BRAND_BLUE,
-    borderRadius: Spacing.three,
-    paddingVertical: Spacing.three,
-    paddingHorizontal: Spacing.four,
-    minHeight: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flex: 1,
-  },
-  primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    borderRadius: Spacing.three,
-    paddingVertical: Spacing.three,
-    paddingHorizontal: Spacing.four,
-    minHeight: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: BRAND_BLUE,
-    backgroundColor: 'transparent',
-    flex: 1,
-  },
-  secondaryButtonText: {
-    color: BRAND_BLUE,
-    fontSize: 16,
-    fontWeight: '600',
   },
   pressed: {
     opacity: 0.85,

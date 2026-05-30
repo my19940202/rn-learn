@@ -1,4 +1,4 @@
-# Welcome to your Expo app 👋
+# 项目最好使用node 22.22.0 进行开发 因为环境依赖都在这个版本上
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
