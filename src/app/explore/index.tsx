@@ -87,88 +87,77 @@ export default function ProfileScreen() {
         <KeyboardAvoidingView
           style={styles.keyboardView}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <View style={styles.logoSection}>
-            <View style={styles.divider} />
-            <View style={styles.logoWrapper}>
-              <Image
-                source={require('@/assets/images/splash-icon.png')}
-                style={styles.logo}
-                contentFit="contain"
-              />
-            </View>
-            <View style={styles.divider} />
-          </View>
-
-          <View style={styles.formSection}>
-            <View style={styles.inputGroup}>
-              <TextInput
-                style={styles.input}
-                placeholder="邮箱/手机号"
-                placeholderTextColor="#B0B4BA"
-                value={account}
-                onChangeText={setAccount}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                returnKeyType="next"
-              />
-              <View style={styles.inputDivider} />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <View style={styles.passwordRow}>
+          <View style={styles.contentCenter}>
+            <View style={styles.formSection}>
+              <View style={styles.inputGroup}>
                 <TextInput
-                  style={[styles.input, styles.passwordInput]}
-                  placeholder="密码"
+                  style={styles.input}
+                  placeholder="邮箱/手机号"
                   placeholderTextColor="#B0B4BA"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
-                  returnKeyType="done"
-                  onSubmitEditing={handleLogin}
+                  value={account}
+                  onChangeText={setAccount}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  returnKeyType="next"
                 />
-                <Pressable
-                  onPress={() => setShowPassword((prev) => !prev)}
-                  hitSlop={8}
-                  style={styles.eyeButton}>
-                  <ThemedText themeColor="textSecondary" style={styles.eyeText}>
-                    {showPassword ? '隐藏' : '显示'}
-                  </ThemedText>
-                </Pressable>
+                <View style={styles.inputDivider} />
               </View>
-              <View style={styles.inputDivider} />
+
+              <View style={styles.inputGroup}>
+                <View style={styles.passwordRow}>
+                  <TextInput
+                    style={[styles.input, styles.passwordInput]}
+                    placeholder="密码"
+                    placeholderTextColor="#B0B4BA"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
+                    returnKeyType="done"
+                    onSubmitEditing={handleLogin}
+                  />
+                  <Pressable
+                    onPress={() => setShowPassword((prev) => !prev)}
+                    hitSlop={8}
+                    style={styles.eyeButton}>
+                    <ThemedText themeColor="textSecondary" style={styles.eyeText}>
+                      {showPassword ? '隐藏' : '显示'}
+                    </ThemedText>
+                  </Pressable>
+                </View>
+                <View style={styles.inputDivider} />
+              </View>
             </View>
-          </View>
 
-          {error && (
-            <ThemedView style={styles.errorBanner}>
-              <ThemedText type="small" style={styles.errorText}>
-                {error}
-              </ThemedText>
-            </ThemedView>
-          )}
+            {error && (
+              <ThemedView style={styles.errorBanner}>
+                <ThemedText type="small" style={styles.errorText}>
+                  {error}
+                </ThemedText>
+              </ThemedView>
+            )}
 
-          <View style={styles.actionSection}>
-            <View style={styles.divider} />
-            <Pressable
-              style={({ pressed }) => [styles.loginButton, pressed && styles.pressed]}
-              onPress={handleLogin}
-              disabled={loading}>
-              {loading ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <ThemedText style={styles.loginButtonText}>登录</ThemedText>
-              )}
-            </Pressable>
-
-            <View style={styles.linkRow}>
-              <Pressable hitSlop={8}>
-                <ThemedText themeColor="textSecondary">忘记密码?</ThemedText>
+            <View style={styles.actionSection}>
+              <Pressable
+                style={({ pressed }) => [styles.loginButton, pressed && styles.pressed]}
+                onPress={handleLogin}
+                disabled={loading}>
+                {loading ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <ThemedText style={styles.loginButtonText}>登录</ThemedText>
+                )}
               </Pressable>
-              <Link href="/explore/register" asChild>
+
+              <View style={styles.linkRow}>
                 <Pressable hitSlop={8}>
-                  <ThemedText style={styles.registerLink}>注册账号</ThemedText>
+                  <ThemedText themeColor="textSecondary">忘记密码?</ThemedText>
                 </Pressable>
-              </Link>
+                <Link href="/explore/register" asChild>
+                  <Pressable hitSlop={8}>
+                    <ThemedText style={styles.registerLink}>注册账号</ThemedText>
+                  </Pressable>
+                </Link>
+              </View>
             </View>
           </View>
 
@@ -196,6 +185,12 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: Spacing.four,
   },
+  contentCenter: {
+    flex: 1,
+    justifyContent: 'center',
+    width: '100%',
+    gap: Spacing.four,
+  },
   profileSection: {
     flex: 1,
     paddingHorizontal: Spacing.four,
@@ -206,10 +201,6 @@ const styles = StyleSheet.create({
   profileName: {
     marginTop: Spacing.three,
   },
-  logoSection: {
-    paddingTop: Spacing.six,
-    paddingBottom: Spacing.five,
-  },
   logoWrapper: {
     alignItems: 'center',
     paddingVertical: Spacing.five,
@@ -219,13 +210,8 @@ const styles = StyleSheet.create({
     height: 72,
     borderRadius: 16,
   },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: '#E8E8EC',
-  },
   formSection: {
     gap: Spacing.four,
-    paddingVertical: Spacing.four,
   },
   inputGroup: {
     gap: Spacing.two,
@@ -254,7 +240,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#E8E8EC',
   },
   actionSection: {
-    paddingTop: Spacing.four,
     gap: Spacing.four,
   },
   loginButton: {
@@ -294,7 +279,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   footer: {
-    marginTop: 'auto',
     alignItems: 'center',
     paddingTop: Spacing.four,
   },
