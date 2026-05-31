@@ -1,36 +1,37 @@
-import { Icon, Label, NativeTabs } from 'expo-router/unstable-native-tabs';
+import { Label, NativeTabs } from 'expo-router/unstable-native-tabs';
 import { useColorScheme } from 'react-native';
 
+import { NativeTabIcon } from '@/components/native-tab-icon';
 import { Colors } from '@/constants/theme';
-
-const tabIcons = {
-  home: require('../../assets/images/tabIcons/home.png'),
-  chat: require('../../assets/images/tabIcons/chat.png'),
-  user: require('../../assets/images/tabIcons/user.png'),
-} as const;
 
 export default function AppTabs() {
   const scheme = useColorScheme();
-  const colors = Colors[scheme === 'unspecified' ? 'light' : scheme];
+  const colorScheme = scheme === 'dark' ? 'dark' : 'light';
+  const colors = Colors[colorScheme];
 
   return (
     <NativeTabs
       backgroundColor={colors.background}
       indicatorColor={colors.backgroundElement}
+      iconColor={colors.textSecondary}
+      tintColor={colors.text}
       labelStyle={{ selected: { color: colors.text } }}>
       <NativeTabs.Trigger name="index">
         <Label>Home</Label>
-        <Icon sf="house.fill" androidSrc={tabIcons.home} />
+        <NativeTabIcon androidDrawable="tab_ic_home" iosSf="house.fill" />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="chat">
         <Label>Chat</Label>
-        <Icon sf="bubble.left.and.bubble.right.fill" androidSrc={tabIcons.chat} />
+        <NativeTabIcon
+          androidDrawable="tab_ic_chat"
+          iosSf="bubble.left.and.bubble.right.fill"
+        />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="explore">
         <Label>我的</Label>
-        <Icon sf="person.fill" androidSrc={tabIcons.user} />
+        <NativeTabIcon androidDrawable="tab_ic_user" iosSf="person.fill" />
       </NativeTabs.Trigger>
     </NativeTabs>
   );
