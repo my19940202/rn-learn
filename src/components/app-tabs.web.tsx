@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import {
   TabList,
   TabListProps,
@@ -6,27 +7,37 @@ import {
   TabTrigger,
   TabTriggerSlotProps,
 } from 'expo-router/ui';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, useColorScheme, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
 
-import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { Colors, MaxContentWidth, Spacing } from '@/constants/theme';
+
+const tabIcons = {
+  index: require('../../assets/images/tabIcons/home.png'),
+  chat: require('../../assets/images/tabIcons/chat.png'),
+  explore: require('../../assets/images/tabIcons/user.png'),
+} as const;
 
 export default function AppTabs() {
+  const scheme = useColorScheme();
+  const colors = Colors[scheme === 'unspecified' ? 'light' : scheme];
+
   return (
-    <Tabs>
-      <TabSlot style={{ height: '100%' }} />
+    <Tabs style={[styles.tabs, { backgroundColor: colors.background }]}>
+      <TabSlot style={styles.slot} />
       <TabList asChild>
         <CustomTabList>
-          <TabTrigger name="home" href="/" asChild>
-            <TabButton>Home</TabButton>
+          <TabTrigger name="index" href="/" asChild>
+            <TabButton icon={tabIcons.index}>Home</TabButton>
           </TabTrigger>
           <TabTrigger name="chat" href="/chat" asChild>
-            <TabButton>Chat</TabButton>
+            <TabButton icon={tabIcons.chat}>Chat</TabButton>
           </TabTrigger>
-          <TabTrigger name="my" href="/explore" asChild>
-            <TabButton>我的</TabButton>
+          <TabTrigger name="explore" href="/explore" asChild>
+            <TabButton icon={tabIcons.explore}>我的</TabButton>
           </TabTrigger>
         </CustomTabList>
       </TabList>
@@ -34,12 +45,19 @@ export default function AppTabs() {
   );
 }
 
-export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps) {
+type TabButtonProps = TabTriggerSlotProps & {
+  icon: number;
+};
+
+export function TabButton({ children, isFocused, icon, ...props }: TabButtonProps) {
   return (
-    <Pressable {...props} style={({ pressed }) => pressed && styles.pressed}>
+    <Pressable
+      {...props}
+      style={({ pressed }) => [styles.tabPressable, pressed && styles.pressed]}>
       <ThemedView
         type={isFocused ? 'backgroundSelected' : 'backgroundElement'}
         style={styles.tabButtonView}>
+        <Image source={icon} style={styles.tabIcon} contentFit="contain" />
         <ThemedText type="small" themeColor={isFocused ? 'text' : 'textSecondary'}>
           {children}
         </ThemedText>
@@ -49,8 +67,21 @@ export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps
 }
 
 export function CustomTabList(props: TabListProps) {
+  const insets = useSafeAreaInsets();
+  const scheme = useColorScheme();
+  const colors = Colors[scheme === 'unspecified' ? 'light' : scheme];
+
   return (
-    <View {...props} style={styles.tabListContainer}>
+    <View
+      {...props}
+      style={[
+        styles.tabListContainer,
+        {
+          paddingBottom: Math.max(insets.bottom, Spacing.two),
+          backgroundColor: colors.background,
+          borderTopColor: colors.backgroundElement,
+        },
+      ]}>
       <ThemedView type="backgroundElement" style={styles.innerContainer}>
         {props.children}
       </ThemedView>
@@ -59,13 +90,23 @@ export function CustomTabList(props: TabListProps) {
 }
 
 const styles = StyleSheet.create({
+  tabs: {
+    flex: 1,
+  },
+  slot: {
+    flex: 1,
+  },
   tabListContainer: {
     position: 'absolute',
-    width: '100%',
-    padding: Spacing.three,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingTop: Spacing.two,
+    paddingHorizontal: Spacing.three,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   innerContainer: {
     paddingVertical: Spacing.two,
@@ -77,12 +118,24 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
     maxWidth: MaxContentWidth,
   },
+  tabPressable: {
+    flex: 1,
+  },
   pressed: {
     opacity: 0.7,
   },
   tabButtonView: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.one,
     paddingVertical: Spacing.one,
-    paddingHorizontal: Spacing.three,
+    paddingHorizontal: Spacing.two,
     borderRadius: Spacing.three,
+    minHeight: 52,
+  },
+  tabIcon: {
+    width: 24,
+    height: 24,
   },
 });
