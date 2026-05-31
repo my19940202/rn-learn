@@ -1,4 +1,3 @@
-import * as SecureStore from 'expo-secure-store';
 import {
   createContext,
   useCallback,
@@ -15,6 +14,7 @@ import {
   registerApi,
   type AuthUser,
 } from '@/services/chat-api';
+import * as secureStorage from '@/utils/secure-storage';
 
 const TOKEN_KEY = 'auth_token';
 const USER_KEY = 'auth_user';
@@ -32,13 +32,13 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 async function persistSession(token: string, user: AuthUser) {
-  await SecureStore.setItemAsync(TOKEN_KEY, token);
-  await SecureStore.setItemAsync(USER_KEY, JSON.stringify(user));
+  await secureStorage.setItem(TOKEN_KEY, token);
+  await secureStorage.setItem(USER_KEY, JSON.stringify(user));
 }
 
 async function clearSession() {
-  await SecureStore.deleteItemAsync(TOKEN_KEY);
-  await SecureStore.deleteItemAsync(USER_KEY);
+  await secureStorage.deleteItem(TOKEN_KEY);
+  await secureStorage.deleteItem(USER_KEY);
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -51,8 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     async function restoreSession() {
       try {
-        const storedToken = await SecureStore.getItemAsync(TOKEN_KEY);
-        const storedUser = await SecureStore.getItemAsync(USER_KEY);
+        const storedToken = await secureStorage.getItem(TOKEN_KEY);
+        const storedUser = await secureStorage.getItem(USER_KEY);
 
         if (!storedToken) return;
 
@@ -68,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (mounted) {
           setToken(storedToken);
           setUser(currentUser);
-          await SecureStore.setItemAsync(USER_KEY, JSON.stringify(currentUser));
+          await secureStorage.setItem(USER_KEY, JSON.stringify(currentUser));
         }
       } catch {
         await clearSession();
