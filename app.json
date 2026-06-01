@@ -2,7 +2,7 @@
   "expo": {
     "name": "AI-Link",
     "slug": "ailink",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "ailink",
@@ -27,6 +27,14 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "允许 AI-Link 访问你的相册以上传头像",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
       [
         "expo-splash-screen",
         {

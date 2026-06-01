@@ -11,11 +11,29 @@ export function getUserApiUrl() {
   return `${API_BASE}/api/user`;
 }
 
+export type PlanTier = 'free' | 'pro' | 'max';
+
+export type PlanLimits = {
+  daily_standard: number | null;
+  monthly_standard: number | null;
+  monthly_premium: number | null;
+  unlimited: boolean;
+};
+
 export type AuthUser = {
   id: string;
   email: string;
   name: string | null;
   avatar_url?: string | null;
+  created_at?: number;
+  last_login_at?: number | null;
+  plan_tier?: PlanTier;
+  plan_status?: string;
+  daily_standard_used?: number;
+  monthly_standard_used?: number;
+  monthly_premium_used?: number;
+  credit?: number;
+  limits?: PlanLimits;
 };
 
 export type AuthResponse = {
@@ -57,6 +75,59 @@ export async function fetchCurrentUser(token: string): Promise<AuthUser> {
   const res = await fetch(getUserApiUrl(), {
     headers: { Authorization: `Bearer ${token}` },
   });
+  const data = await parseJsonResponse<{ user: AuthUser }>(res);
+  return data.user;
+}
+
+export function resolveAssetUrl(path?: string | null): string | null {
+  if (!path) return null;
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  return `${API_BASE}${path.startsWith('/') ? path : `/${path}`}`;
+}
+
+export async function uploadAvatar(token: string, uri: string): Promise<AuthUser> {
+  const formData = new FormData();
+  const fileName = uri.split('/').pop() || 'avatar.jpg';
+  const mimeType = fileName.endsWith('.png')
+    ? 'image/png'
+    : fileName.endsWith('.webp')
+      ? 'image/webp'
+      : 'image/jpeg';
+
+  formData.append('file', {
+    uri,
+    name: fileName,
+    type: mimeType,
+  } as unknown as Blob);
+
+  const res = await fetch(`${getUserApiUrl()}/avatar`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  const data = await parseJsonResponse<{ user: AuthUser }>(res);
+  return data.user;
+}
+
+export async function updateProfileApi(
+  token: string,
+  payload: { name?: string; avatar_url?: string | null },
+): Promise<AuthUser> {
+  const res = await fetch(getUserApiUrl(), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      action: 'updateProfile',
+      ...payload,
+    }),
+  });
+
   const data = await parseJsonResponse<{ user: AuthUser }>(res);
   return data.user;
 }
