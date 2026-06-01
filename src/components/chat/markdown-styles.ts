@@ -3,7 +3,7 @@ import type { MarkdownProps } from 'react-native-markdown-display';
 
 import { Colors, Fonts } from '@/constants/theme';
 
-type Theme = (typeof Colors)['light'];
+type Theme = (typeof Colors)['light' | 'dark'];
 
 export function createMarkdownStyles(theme: Theme): MarkdownProps['style'] {
   return StyleSheet.create({

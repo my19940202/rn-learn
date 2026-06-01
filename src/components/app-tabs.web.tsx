@@ -23,7 +23,8 @@ const tabIcons = {
 
 export default function AppTabs() {
   const scheme = useColorScheme();
-  const colors = Colors[scheme ?? 'light'];
+  const colorScheme = scheme === 'dark' ? 'dark' : 'light';
+  const colors = Colors[colorScheme];
 
   return (
     <Tabs style={[styles.tabs, { backgroundColor: colors.background }]}>
@@ -69,7 +70,8 @@ export function TabButton({ children, isFocused, icon, ...props }: TabButtonProp
 export function CustomTabList(props: TabListProps) {
   const insets = useSafeAreaInsets();
   const scheme = useColorScheme();
-  const colors = Colors[scheme ?? 'light'];
+  const colorScheme = scheme === 'dark' ? 'dark' : 'light';
+  const colors = Colors[colorScheme];
 
   return (
     <View

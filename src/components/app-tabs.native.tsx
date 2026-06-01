@@ -1,5 +1,5 @@
-import { Icon, Label, NativeTabs } from 'expo-router/unstable-native-tabs';
-import { Platform, useColorScheme } from 'react-native';
+import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { useColorScheme } from 'react-native';
 
 import { Colors } from '@/constants/theme';
 
@@ -16,30 +16,18 @@ export default function AppTabs() {
       tintColor={colors.text}
       labelStyle={{ selected: { color: colors.text } }}>
       <NativeTabs.Trigger name="index">
-        <Label>Home</Label>
-        {Platform.OS === 'android' ? (
-          <Icon drawable="tab_ic_home" />
-        ) : (
-          <Icon sf="house.fill" />
-        )}
+        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="house.fill" md="home" />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="chat">
-        <Label>Chat</Label>
-        {Platform.OS === 'android' ? (
-          <Icon drawable="tab_ic_chat" />
-        ) : (
-          <Icon sf="bubble.left.and.bubble.right.fill" />
-        )}
+        <NativeTabs.Trigger.Label>Chat</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="bubble.left.and.bubble.right.fill" md="chat" />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="explore">
-        <Label>我的</Label>
-        {Platform.OS === 'android' ? (
-          <Icon drawable="tab_ic_user" />
-        ) : (
-          <Icon sf="person.fill" />
-        )}
+        <NativeTabs.Trigger.Label>我的</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="person.fill" md="person" />
       </NativeTabs.Trigger>
     </NativeTabs>
   );

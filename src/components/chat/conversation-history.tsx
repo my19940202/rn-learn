@@ -118,7 +118,7 @@ export function ConversationHistory({
                 </ThemedView>
               ) : conversations.length === 0 ? (
                 <ThemedView style={styles.emptyState}>
-                  <SystemIcon name="bubble.left.and.bubble.right" size={40} color={theme.textSecondary} />
+                  <SystemIcon name="chat-bubble" size={40} color={theme.textSecondary} />
                   <ThemedText themeColor="textSecondary" style={styles.emptyText}>
                     暂无历史对话
                   </ThemedText>
