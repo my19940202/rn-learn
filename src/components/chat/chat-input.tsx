@@ -31,7 +31,9 @@ export function ChatInput({
           style={[styles.input, { color: theme.text }]}
           value={value}
           onChangeText={onChangeText}
-          placeholder={sendDisabled ? '请先登录后再发送' : '输入消息...'}
+          placeholder={
+            sendDisabled ? '已达游客对话上限，请登录后继续' : '输入消息...'
+          }
           placeholderTextColor={theme.textSecondary}
           multiline
           maxLength={2000}

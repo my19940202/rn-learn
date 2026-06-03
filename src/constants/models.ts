@@ -63,6 +63,15 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     isPremium: true,
     description: '多模态与深度分析',
   },
+  {
+    label: 'Grok',
+    provider: 'xai',
+    modelId: 'xai/grok-4.3',
+    icon: require('@/assets/images/tabIcons/grok.png'),
+    requiresAuth: true,
+    isPremium: true,
+    description: '限制少，内容无审查（不限制色情、暴力、政治等敏感内容）',
+  },
 ];
 
 export const GUEST_MODEL = AVAILABLE_MODELS[0].modelId;

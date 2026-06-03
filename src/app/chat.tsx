@@ -18,6 +18,8 @@ import { MessageBubble } from '@/components/chat/message-bubble';
 import { ModelPicker } from '@/components/chat/model-picker';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { InlineToast } from '@/components/ui/inline-toast';
+import { GUEST_CHAT_LIMIT, GUEST_CHAT_LIMIT_TOAST } from '@/constants/guest-chat';
 import {
   GUEST_MODEL,
   LOGGED_IN_DEFAULT_MODEL,
@@ -27,6 +29,7 @@ import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useBottomTabPadding } from '@/hooks/use-bottom-tab-padding';
 import { useKeyboardVisible } from '@/hooks/use-keyboard-visible';
+import { useToast } from '@/hooks/use-toast';
 import {
   fetchConversationDetail,
   getChatApiUrl,
@@ -34,6 +37,11 @@ import {
   type Conversation,
 } from '@/services/chat-api';
 import { OpenAISSEChatTransport } from '@/services/openai-sse-chat-transport';
+import {
+  clearGuestChatCount,
+  getGuestChatCount,
+  incrementGuestChatCount,
+} from '@/utils/guest-chat-limit';
 
 const GUEST_WELCOME_MESSAGE: UIMessage = {
   id: 'welcome',
@@ -41,7 +49,7 @@ const GUEST_WELCOME_MESSAGE: UIMessage = {
   parts: [
     {
       type: 'text',
-      text: '你好！我是 AI 助手，当前使用 DeepSeek 为你解答。登录后可切换 ChatGPT、Claude 等更多模型。',
+      text: '你好！我是 AI 助手，登录后可切换 ChatGPT、Claude和Gemini等更多模型。',
     },
   ],
 };
@@ -57,6 +65,10 @@ function getMessageText(message: UIMessage) {
     .filter((part) => part.type === 'text')
     .map((part) => part.text)
     .join('');
+}
+
+function countUserMessages(messages: UIMessage[]) {
+  return messages.filter((message) => message.role === 'user').length;
 }
 
 export default function ChatScreen() {
@@ -77,6 +89,18 @@ export default function ChatScreen() {
   const scrollPendingRef = useRef(false);
   const appliedModelParam = useRef<string | null>(null);
   const conversationIdRef = useRef<string | null>(null);
+  const { toastMessage, showToast } = useToast();
+  const [guestLimitReached, setGuestLimitReached] = useState(false);
+
+  const refreshGuestLimit = useCallback(async (currentMessages: UIMessage[]) => {
+    if (token) {
+      setGuestLimitReached(false);
+      return;
+    }
+    const stored = await getGuestChatCount();
+    const sessionCount = countUserMessages(currentMessages);
+    setGuestLimitReached(Math.max(stored, sessionCount) >= GUEST_CHAT_LIMIT);
+  }, [token]);
 
   useEffect(() => {
     const modelParam = params.model;
@@ -106,6 +130,8 @@ export default function ChatScreen() {
       setSelectedModel(GUEST_MODEL);
       return;
     }
+    void clearGuestChatCount();
+    setGuestLimitReached(false);
     setSelectedModel((current) =>
       current === GUEST_MODEL ? LOGGED_IN_DEFAULT_MODEL : current,
     );
@@ -164,6 +190,10 @@ export default function ChatScreen() {
     messages: loadedMessages ?? initialMessages,
   });
 
+  useEffect(() => {
+    void refreshGuestLimit(messages);
+  }, [messages, refreshGuestLimit]);
+
   const loading = status === 'streaming' || status === 'submitted';
 
   const scrollToEnd = useCallback(() => {
@@ -179,10 +209,33 @@ export default function ChatScreen() {
     const trimmed = input.trim();
     if (!trimmed || loading) return;
 
+    if (!isAuthenticated) {
+      const stored = await getGuestChatCount();
+      const sessionCount = countUserMessages(messages);
+      if (Math.max(stored, sessionCount) >= GUEST_CHAT_LIMIT) {
+        setGuestLimitReached(true);
+        showToast(GUEST_CHAT_LIMIT_TOAST);
+        return;
+      }
+    }
+
     setInput('');
     await sendMessage({ text: trimmed });
+    if (!isAuthenticated) {
+      const next = await incrementGuestChatCount();
+      setGuestLimitReached(next >= GUEST_CHAT_LIMIT);
+    }
     scrollToEnd();
-  }, [input, loading, scrollToEnd, sendMessage]);
+  }, [
+    input,
+    isAuthenticated,
+    loading,
+    messages,
+    refreshGuestLimit,
+    scrollToEnd,
+    sendMessage,
+    showToast,
+  ]);
 
   const handleHistoryPress = useCallback(() => {
     if (!isAuthenticated) {
@@ -283,9 +336,12 @@ export default function ChatScreen() {
               onChangeText={setInput}
               onSend={handleSend}
               loading={loading}
+              sendDisabled={!isAuthenticated && guestLimitReached}
             />
           </ThemedView>
         </KeyboardAvoidingView>
+
+        <InlineToast message={toastMessage} />
       </SafeAreaView>
 
       {isAuthenticated && token && (

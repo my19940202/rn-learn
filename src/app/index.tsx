@@ -13,7 +13,6 @@ import { useBottomTabPadding } from '@/hooks/use-bottom-tab-padding';
 import { useTheme } from '@/hooks/use-theme';
 
 const FEATURES = [
-  '免登录即可使用 DeepSeek 智能对话',
   '登录后解锁 ChatGPT、Claude、Gemini、Grok',
   '统一接入海外模型，低成本按需使用',
 ];
@@ -53,7 +52,7 @@ export default function HomeScreen() {
           </ThemedView>
 
           <ThemedText themeColor="textSecondary" style={styles.description}>
-            AI Link 帮你以更低成本访问 DeepSeek、ChatGPT、Claude 等海外大模型。
+            AI Link 帮你以更低成本访问 ChatGPT、Claude、Gemini、Grok 等海外大模型。
             无需复杂配置，打开即用，适合日常问答、写作与灵感探索。
           </ThemedText>
 
