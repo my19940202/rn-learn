@@ -33,20 +33,13 @@ type ConversationHistoryProps = {
 
 function formatTime(ts: number) {
   const d = new Date(ts);
-  const now = new Date();
-  const isToday =
-    d.getFullYear() === now.getFullYear() &&
-    d.getMonth() === now.getMonth() &&
-    d.getDate() === now.getDate();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const hour = String(d.getHours()).padStart(2, '0');
+  const minute = String(d.getMinutes()).padStart(2, '0');
 
-  if (isToday) {
-    return d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
-  }
-
-  const diffDays = Math.floor((now.getTime() - d.getTime()) / 86400000);
-  if (diffDays === 1) return '昨天';
-  if (diffDays < 7) return `${diffDays}天前`;
-  return d.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+  return `${year}-${month}-${day} ${hour}:${minute}`;
 }
 
 export function ConversationHistory({
@@ -144,6 +137,15 @@ export function ConversationHistory({
                           <ThemedText numberOfLines={1} style={styles.convTitle}>
                             {conv.title}
                           </ThemedText>
+                          {conv.last_message && (
+                            <ThemedText
+                              numberOfLines={1}
+                              type="small"
+                              themeColor="textSecondary"
+                              style={styles.lastMessage}>
+                              {conv.last_message}
+                            </ThemedText>
+                          )}
                           <ThemedView style={styles.rowMeta}>
                             {model && (
                               <ThemedText type="small" themeColor="textSecondary">
@@ -211,6 +213,10 @@ const styles = StyleSheet.create({
   convTitle: {
     fontSize: 15,
     fontWeight: '500',
+  },
+  lastMessage: {
+    fontSize: 13,
+    marginTop: 2,
   },
   rowMeta: {
     flexDirection: 'row',

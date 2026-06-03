@@ -132,7 +132,7 @@ export function ModelPicker({
                           locked={locked}
                         />
                         <ThemedView style={styles.rowText}>
-                          <ThemedText type="smallBold">{model.label}</ThemedText>
+                          <ThemedText type="smallBold">{model.modelId.split('/')[1]}</ThemedText>
                           {locked && (
                             <ThemedText type="small" themeColor="textSecondary">
                               登录解锁

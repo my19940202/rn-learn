@@ -2,7 +2,14 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { SymbolView } from 'expo-symbols';
 import { type StyleProp, type ViewStyle } from 'react-native';
 
-type SystemIconName = 'close' | 'check' | 'chevron-down' | 'chevron-right' | 'lock' | 'chat-bubble';
+type SystemIconName =
+  | 'close'
+  | 'check'
+  | 'chevron-down'
+  | 'chevron-right'
+  | 'lock'
+  | 'chat-bubble'
+  | 'edit';
 
 const SF_SYMBOL: Record<SystemIconName, string> = {
   close: 'xmark',
@@ -11,6 +18,7 @@ const SF_SYMBOL: Record<SystemIconName, string> = {
   'chevron-right': 'chevron.right',
   lock: 'lock.fill',
   'chat-bubble': 'bubble.left.and.bubble.right',
+  edit: 'pencil',
 };
 
 const MATERIAL: Record<SystemIconName, keyof typeof MaterialIcons.glyphMap> = {
@@ -20,6 +28,7 @@ const MATERIAL: Record<SystemIconName, keyof typeof MaterialIcons.glyphMap> = {
   'chevron-right': 'chevron-right',
   lock: 'lock',
   'chat-bubble': 'chat-bubble',
+  edit: 'edit',
 };
 
 type SystemIconProps = {

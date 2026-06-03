@@ -18,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { SystemIcon } from '@/components/ui/system-icon';
 import {
   formatCreatedAt,
   formatQuotaUsage,
@@ -154,7 +155,7 @@ export default function ProfileScreen() {
                   {uploadingAvatar ? (
                     <ActivityIndicator size="small" color="#FFFFFF" />
                   ) : (
-                    <ThemedText style={styles.avatarEditBadgeText}>改</ThemedText>
+                    <SystemIcon name="edit" size={18} color="#FFFFFF" />
                   )}
                 </View>
               </Pressable>
@@ -480,11 +481,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: '#FFFFFF',
-  },
-  avatarEditBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    fontWeight: '700',
   },
   profileName: {
     marginTop: Spacing.one,

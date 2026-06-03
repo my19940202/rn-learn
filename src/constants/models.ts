@@ -9,17 +9,18 @@ export type ModelOption = {
 };
 
 export const AVAILABLE_MODELS: ModelOption[] = [
+  // 普通模型
   {
-    label: 'DeepSeek',
-    provider: 'deepseek',
-    modelId: '@cf/deepseek-ai/deepseek-r1-distill-qwen-32b',
-    icon: require('@/assets/images/tabIcons/deepseek.png'),
-    requiresAuth: false,
+    label: 'Gemini',
+    provider: 'google',
+    modelId: 'google/gemini-3-flash',
+    icon: require('@/assets/images/tabIcons/gemini.png'),
+    requiresAuth: true,
   },
   {
     label: 'ChatGPT',
     provider: 'openai',
-    modelId: 'openai/gpt-4',
+    modelId: 'openai/gpt-5.4-mini',
     icon: require('@/assets/images/tabIcons/chatgpt.png'),
     requiresAuth: true,
   },
@@ -30,18 +31,26 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     icon: require('@/assets/images/tabIcons/claude.png'),
     requiresAuth: true,
   },
+  // 高级模型
   {
-    label: 'Gemini',
-    provider: 'google',
-    modelId: 'google/gemini-2.5-flash',
-    icon: require('@/assets/images/tabIcons/gemini.png'),
+    label: 'GPT-5.5',
+    provider: 'openai',
+    modelId: 'openai/gpt-5.5',
+    icon: require('@/assets/images/tabIcons/chatgpt.png'),
     requiresAuth: true,
   },
   {
-    label: 'Grok',
-    provider: 'x-ai',
-    modelId: 'xai/grok-4.20-0309-reasoning',
-    icon: require('@/assets/images/tabIcons/grok.png'),
+    label: 'Claude Sonnet',
+    provider: 'anthropic',
+    modelId: 'anthropic/claude-sonnet-4.6',
+    icon: require('@/assets/images/tabIcons/claude.png'),
+    requiresAuth: true,
+  },
+  {
+    label: 'Gemini Pro',
+    provider: 'google',
+    modelId: 'google/gemini-3.1-pro',
+    icon: require('@/assets/images/tabIcons/gemini.png'),
     requiresAuth: true,
   },
 ];

@@ -60,8 +60,8 @@ function getMessageText(message: UIMessage) {
 }
 
 export default function ChatScreen() {
-  const bottomPadding = useBottomTabPadding(Spacing.two);
-  const { visible: keyboardVisible, height: keyboardHeight } = useKeyboardVisible();
+  const bottomPadding = useBottomTabPadding(Spacing.one);
+  const { visible: keyboardVisible } = useKeyboardVisible();
   const router = useRouter();
   const { token, user } = useAuth();
   const isAuthenticated = !!token;
@@ -76,6 +76,7 @@ export default function ChatScreen() {
   const listRef = useRef<FlatList<UIMessage>>(null);
   const scrollPendingRef = useRef(false);
   const appliedModelParam = useRef<string | null>(null);
+  const conversationIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     const modelParam = params.model;
@@ -85,6 +86,7 @@ export default function ChatScreen() {
         appliedModelParam.current = modelParam;
         setSelectedModel(modelParam);
         setLoadedMessages(null);
+        conversationIdRef.current = null;
         setChatSessionId(`model-${Date.now()}`);
       }
     }
@@ -113,7 +115,17 @@ export default function ChatScreen() {
     () =>
       new OpenAISSEChatTransport({
         api: getChatApiUrl(),
-        fetch: expoFetch as unknown as typeof globalThis.fetch,
+        fetch: (async (input, init) => {
+          const response = await (expoFetch as unknown as typeof globalThis.fetch)(
+            input,
+            init,
+          );
+          const conversationId = response.headers.get('X-Conversation-Id');
+          if (conversationId) {
+            conversationIdRef.current = conversationId;
+          }
+          return response;
+        }) as typeof globalThis.fetch,
         prepareSendMessagesRequest: ({ headers, body, messages }) => {
           const currentToken = tokenRef.current;
           const currentUser = userRef.current;
@@ -125,6 +137,9 @@ export default function ChatScreen() {
               ...body,
               model: effectiveModelRef.current,
               messages: uiMessagesToApiMessages(messages),
+              ...(conversationIdRef.current
+                ? { conversationId: conversationIdRef.current }
+                : {}),
               ...(currentToken && currentUser
                 ? {
                     userId: currentUser.id,
@@ -189,6 +204,7 @@ export default function ChatScreen() {
         }));
         setSelectedModel(conv.model);
         setLoadedMessages(uiMessages.length > 0 ? uiMessages : null);
+        conversationIdRef.current = conv.id;
         setChatSessionId(`conv-${conv.id}`);
       } catch {}
     },
@@ -240,11 +256,14 @@ export default function ChatScreen() {
 
           <ThemedView
             style={{
-              paddingBottom: keyboardVisible
-                ? Platform.OS === 'android'
-                  ? (keyboardHeight + 80)
-                  : 0
-                : bottomPadding,
+              paddingBottom:
+                Platform.OS === 'android'
+                  ? keyboardVisible
+                    ? Spacing.two
+                    : bottomPadding
+                  : keyboardVisible
+                    ? 0
+                    : bottomPadding,
             }}>
             <ChatInput
               value={input}

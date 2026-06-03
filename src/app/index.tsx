@@ -58,7 +58,7 @@ export default function HomeScreen() {
           </ThemedText>
 
           <View style={styles.modelGrid}>
-            {AVAILABLE_MODELS.map((model) => {
+            {AVAILABLE_MODELS.slice(0, 3).map((model) => {
               const locked = !isAuthenticated && model.requiresAuth;
               return (
                 <Pressable

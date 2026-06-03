@@ -1,15 +1,23 @@
+import { useSegments } from 'expo-router';
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
-import { useColorScheme } from 'react-native';
+import { Platform, useColorScheme } from 'react-native';
 
 import { Colors } from '@/constants/theme';
+import { useKeyboardVisible } from '@/hooks/use-keyboard-visible';
 
 export default function AppTabs() {
   const scheme = useColorScheme();
   const colorScheme = scheme === 'dark' ? 'dark' : 'light';
   const colors = Colors[colorScheme];
+  const segments = useSegments();
+  const { visible: keyboardVisible } = useKeyboardVisible();
+  const isChatTab = segments[0] === 'chat';
+  const hideTabBar =
+    Platform.OS === 'android' && keyboardVisible && isChatTab;
 
   return (
     <NativeTabs
+      hidden={hideTabBar}
       backgroundColor={colors.background}
       indicatorColor={colors.backgroundElement}
       iconColor={colors.textSecondary}

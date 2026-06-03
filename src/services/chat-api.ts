@@ -138,6 +138,7 @@ export type Conversation = {
   model: string;
   created_at: number;
   updated_at: number;
+  last_message?: string;
 };
 
 export type ConversationMessage = {
@@ -173,19 +174,32 @@ export async function deleteConversation(token: string, conversationId: string):
   await parseJsonResponse<{ success: boolean }>(res);
 }
 
-export function uiMessagesToApiMessages(messages: UIMessage[]) {
-  return messages
+const MAX_HISTORY_MESSAGES = 15;
+
+export function uiMessagesToApiMessages(
+  messages: UIMessage[],
+  maxHistory = MAX_HISTORY_MESSAGES,
+) {
+  const validMessages = messages
     .filter(
       (message) =>
         message.id !== 'welcome' &&
-        (message.role === 'user' || message.role === 'assistant'),
+        (message.role === 'user' ||
+          message.role === 'assistant' ||
+          message.role === 'system'),
     )
     .map((message) => ({
-      role: message.role as 'user' | 'assistant',
+      role: message.role as 'user' | 'assistant' | 'system',
       content: message.parts
         .filter((part) => part.type === 'text')
         .map((part) => part.text)
         .join(''),
     }))
     .filter((message) => message.content.trim().length > 0);
+
+  const systemMessage = validMessages.find((message) => message.role === 'system');
+  const chatMessages = validMessages.filter((message) => message.role !== 'system');
+  const recentMessages = chatMessages.slice(-maxHistory);
+
+  return systemMessage ? [systemMessage, ...recentMessages] : recentMessages;
 }

@@ -26,7 +26,7 @@ export const PLANS: PlanDefinition[] = [
     price: '¥0',
     accentColor: '#9CA3AF',
     standardQuota: '每日 10 次访问普通模型',
-    standardModels: ['Claude 4.5 Haiku', 'Gemini 3.1 Flash-Lite', 'GPT-5.4 mini'],
+    standardModels: ['Gemini 3 Flash', 'GPT-5.4 mini', 'Claude 4.5 Haiku'],
   },
   {
     tier: 'pro',
@@ -36,7 +36,7 @@ export const PLANS: PlanDefinition[] = [
     accentColor: '#208AEF',
     standardQuota: '每月 2,000 次访问普通模型',
     premiumQuota: '每月 100 次访问高级模型',
-    standardModels: ['Claude 4.5 Haiku', 'Gemini 3.1 Flash-Lite', 'GPT-5.4 mini'],
+    standardModels: ['Gemini 3 Flash', 'GPT-5.4 mini', 'Claude 4.5 Haiku'],
     premiumModels: ['GPT-5.5', 'Claude 4.6 Sonnet', 'Gemini 3.1 Pro'],
   },
   {
@@ -47,7 +47,7 @@ export const PLANS: PlanDefinition[] = [
     accentColor: '#FFCC33',
     standardQuota: '无限访问普通模型',
     premiumQuota: '无限访问高级模型',
-    standardModels: ['Claude 4.5 Haiku', 'Gemini 3.1 Flash-Lite', 'GPT-5.4 mini'],
+    standardModels: ['Gemini 3 Flash', 'GPT-5.4 mini', 'Claude 4.5 Haiku'],
     premiumModels: ['GPT-5.5', 'Claude 4.6 Sonnet', 'Gemini 3.1 Pro'],
   },
 ];
