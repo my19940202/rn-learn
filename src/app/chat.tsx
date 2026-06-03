@@ -241,14 +241,27 @@ export default function ChatScreen() {
             ref={listRef}
             style={styles.messageListContainer}
             data={messages}
-            extraData={messages}
+            extraData={loading}
             keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <MessageBubble
-                role={item.role === 'user' ? 'user' : 'assistant'}
-                content={getMessageText(item)}
-              />
-            )}
+            renderItem={({ item, index }) => {
+              const content = getMessageText(item);
+              const role = item.role === 'user' ? 'user' : 'assistant';
+              const isLast = index === messages.length - 1;
+              const isTyping =
+                loading &&
+                role === 'assistant' &&
+                isLast &&
+                content.trim() === '';
+
+              return (
+                <MessageBubble role={role} content={content} isTyping={isTyping} />
+              );
+            }}
+            ListFooterComponent={
+              loading && messages[messages.length - 1]?.role === 'user' ? (
+                <MessageBubble role="assistant" content="" isTyping />
+              ) : null
+            }
             contentContainerStyle={styles.messageList}
             onContentSizeChange={scrollToEnd}
             keyboardShouldPersistTaps="handled"
@@ -259,7 +272,7 @@ export default function ChatScreen() {
               paddingBottom:
                 Platform.OS === 'android'
                   ? keyboardVisible
-                    ? Spacing.two
+                    ? Spacing.four
                     : bottomPadding
                   : keyboardVisible
                     ? 0

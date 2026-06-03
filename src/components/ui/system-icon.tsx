@@ -5,6 +5,7 @@ import { type StyleProp, type ViewStyle } from 'react-native';
 type SystemIconName =
   | 'close'
   | 'check'
+  | 'copy'
   | 'chevron-down'
   | 'chevron-right'
   | 'lock'
@@ -14,6 +15,7 @@ type SystemIconName =
 const SF_SYMBOL: Record<SystemIconName, string> = {
   close: 'xmark',
   check: 'checkmark',
+  copy: 'doc.on.doc',
   'chevron-down': 'chevron.down',
   'chevron-right': 'chevron.right',
   lock: 'lock.fill',
@@ -24,6 +26,7 @@ const SF_SYMBOL: Record<SystemIconName, string> = {
 const MATERIAL: Record<SystemIconName, keyof typeof MaterialIcons.glyphMap> = {
   close: 'close',
   check: 'check',
+  copy: 'content-copy',
   'chevron-down': 'expand-more',
   'chevron-right': 'chevron-right',
   lock: 'lock',

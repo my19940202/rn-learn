@@ -11,10 +11,25 @@ export function createMarkdownStyles(theme: Theme): MarkdownProps['style'] {
       color: theme.text,
       fontSize: 14,
       lineHeight: 22,
+      alignSelf: 'flex-start',
+      maxWidth: '100%',
     },
     paragraph: {
       marginTop: 0,
       marginBottom: 8,
+      // 覆盖库默认 width:'100%'，避免与 flexShrink 叠加后容器过窄导致中文逐字换行
+      width: 'auto',
+      alignSelf: 'flex-start',
+      maxWidth: '100%',
+      flexGrow: 0,
+      flexShrink: 0,
+      flexWrap: 'wrap',
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      justifyContent: 'flex-start',
+    },
+    textgroup: {
+      flexShrink: 0,
     },
     heading1: {
       color: theme.text,

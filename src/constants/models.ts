@@ -1,11 +1,15 @@
 import type { ImageSourcePropType } from 'react-native';
 
+export const PREMIUM_ACCENT = '#FFCC33';
+
 export type ModelOption = {
   label: string;
   provider: string;
   modelId: string;
   icon: ImageSourcePropType;
   requiresAuth: boolean;
+  isPremium?: boolean;
+  description?: string;
 };
 
 export const AVAILABLE_MODELS: ModelOption[] = [
@@ -38,6 +42,8 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     modelId: 'openai/gpt-5.5',
     icon: require('@/assets/images/tabIcons/chatgpt.png'),
     requiresAuth: true,
+    isPremium: true,
+    description: '更强推理与长上下文',
   },
   {
     label: 'Claude Sonnet',
@@ -45,6 +51,8 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     modelId: 'anthropic/claude-sonnet-4.6',
     icon: require('@/assets/images/tabIcons/claude.png'),
     requiresAuth: true,
+    isPremium: true,
+    description: '复杂任务与代码',
   },
   {
     label: 'Gemini Pro',
@@ -52,6 +60,8 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     modelId: 'google/gemini-3.1-pro',
     icon: require('@/assets/images/tabIcons/gemini.png'),
     requiresAuth: true,
+    isPremium: true,
+    description: '多模态与深度分析',
   },
 ];
 
@@ -60,6 +70,11 @@ export const LOGGED_IN_DEFAULT_MODEL = AVAILABLE_MODELS[1].modelId;
 
 /** @deprecated use LOGGED_IN_DEFAULT_MODEL or GUEST_MODEL */
 export const DEFAULT_MODEL = LOGGED_IN_DEFAULT_MODEL;
+
+export function formatModelShortName(modelId: string): string {
+  const slash = modelId.indexOf('/');
+  return slash >= 0 ? modelId.slice(slash + 1) : modelId;
+}
 
 export function getModelById(modelId: string): ModelOption | undefined {
   return AVAILABLE_MODELS.find((model) => model.modelId === modelId);

@@ -12,10 +12,11 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ModelIcon } from '@/components/chat/model-icon';
+import { PremiumBadge } from '@/components/chat/premium-badge';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { SystemIcon } from '@/components/ui/system-icon';
-import { AVAILABLE_MODELS, getModelById } from '@/constants/models';
+import { AVAILABLE_MODELS, formatModelShortName, getModelById } from '@/constants/models';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -68,9 +69,13 @@ export function ModelPicker({
             disabled && styles.triggerDisabled,
             pressed && !disabled && styles.pressed,
           ]}>
-          <ModelIcon source={currentModel.icon} size={28} />
+          <ModelIcon
+            source={currentModel.icon}
+            size={28}
+            premium={currentModel.isPremium}
+          />
           <ThemedText type="subtitle" style={styles.triggerLabel}>
-            {currentModel.label}
+            {formatModelShortName(currentModel.modelId)}
           </ThemedText>
         </Pressable>
 
@@ -132,12 +137,21 @@ export function ModelPicker({
                           locked={locked}
                         />
                         <ThemedView style={styles.rowText}>
-                          <ThemedText type="smallBold">{model.modelId.split('/')[1]}</ThemedText>
-                          {locked && (
+                          <View style={styles.titleRow}>
+                            <ThemedText type="smallBold">
+                              {formatModelShortName(model.modelId)}
+                            </ThemedText>
+                            {model.isPremium && <PremiumBadge />}
+                          </View>
+                          {locked ? (
                             <ThemedText type="small" themeColor="textSecondary">
                               登录解锁
                             </ThemedText>
-                          )}
+                          ) : model.description ? (
+                            <ThemedText type="small" themeColor="textSecondary">
+                              {model.description}
+                            </ThemedText>
+                          ) : null}
                         </ThemedView>
                         {selected && (
                           <SystemIcon
@@ -222,13 +236,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.three,
     paddingHorizontal: Spacing.two,
-    paddingVertical: Spacing.three,
+    paddingVertical: Spacing.two,
     borderRadius: Spacing.three,
-    minHeight: 56,
+    minHeight: 50,
   },
   rowText: {
     flex: 1,
     gap: 2,
     backgroundColor: 'transparent',
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    flexWrap: 'wrap',
   },
 });
