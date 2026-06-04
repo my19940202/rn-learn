@@ -32,10 +32,10 @@ export default function AppTabs() {
       <TabList asChild>
         <CustomTabList>
           <TabTrigger name="index" href="/" asChild>
-            <TabButton icon={tabIcons.index}>Home</TabButton>
+            <TabButton icon={tabIcons.index}>首页</TabButton>
           </TabTrigger>
           <TabTrigger name="chat" href="/chat" asChild>
-            <TabButton icon={tabIcons.chat}>Chat</TabButton>
+            <TabButton icon={tabIcons.chat}>聊天</TabButton>
           </TabTrigger>
           <TabTrigger name="explore" href="/explore" asChild>
             <TabButton icon={tabIcons.explore}>我的</TabButton>

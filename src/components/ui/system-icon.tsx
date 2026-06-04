@@ -23,6 +23,18 @@ const SF_SYMBOL: Record<SystemIconName, string> = {
   edit: 'pencil',
 };
 
+/** Material Symbols（Android / Web），与 model-icon、collapsible 一致 */
+const MATERIAL_SYMBOL = {
+  close: 'close',
+  check: 'check',
+  copy: 'content_copy',
+  'chevron-down': 'expand_more',
+  'chevron-right': 'chevron_right',
+  lock: 'lock',
+  'chat-bubble': 'chat_bubble',
+  edit: 'edit',
+} as const satisfies Record<SystemIconName, string>;
+
 const MATERIAL: Record<SystemIconName, keyof typeof MaterialIcons.glyphMap> = {
   close: 'close',
   check: 'check',
@@ -43,18 +55,22 @@ type SystemIconProps = {
 };
 
 export function SystemIcon({ name, size = 18, color, weight, style }: SystemIconProps) {
-  const fallback = (
-    <MaterialIcons name={MATERIAL[name]} size={size} color={color} style={style as never} />
-  );
+  const symbol = MATERIAL_SYMBOL[name];
 
   return (
     <SymbolView
-      name={SF_SYMBOL[name] as never}
+      name={{
+        ios: SF_SYMBOL[name] as never,
+        android: symbol,
+        web: symbol,
+      }}
       size={size}
       weight={weight}
       tintColor={color}
       style={style}
-      fallback={fallback}
+      fallback={
+        <MaterialIcons name={MATERIAL[name]} size={size} color={color} style={style as never} />
+      }
     />
   );
 }

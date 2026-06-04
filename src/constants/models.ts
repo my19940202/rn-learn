@@ -74,6 +74,11 @@ export const AVAILABLE_MODELS: ModelOption[] = [
   },
 ];
 
+/** 首页展示的模型：三个普通模型 + Grok */
+export const HOME_FEATURED_MODELS = AVAILABLE_MODELS.filter(
+  (model) => !model.isPremium || model.label === 'Grok',
+);
+
 export const GUEST_MODEL = AVAILABLE_MODELS[0].modelId;
 export const LOGGED_IN_DEFAULT_MODEL = AVAILABLE_MODELS[1].modelId;
 
@@ -84,6 +89,9 @@ export function formatModelShortName(modelId: string): string {
   const slash = modelId.indexOf('/');
   return slash >= 0 ? modelId.slice(slash + 1) : modelId;
 }
+
+export const STANDARD_MODELS = AVAILABLE_MODELS.filter((model) => !model.isPremium);
+export const PREMIUM_MODELS = AVAILABLE_MODELS.filter((model) => model.isPremium);
 
 export function getModelById(modelId: string): ModelOption | undefined {
   return AVAILABLE_MODELS.find((model) => model.modelId === modelId);

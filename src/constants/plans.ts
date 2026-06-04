@@ -37,7 +37,7 @@ export const PLANS: PlanDefinition[] = [
     standardQuota: '每月 2,000 次访问普通模型',
     premiumQuota: '每月 100 次访问高级模型',
     standardModels: ['Gemini 3 Flash', 'GPT-5.4 mini', 'Claude 4.5 Haiku'],
-    premiumModels: ['GPT-5.5', 'Claude 4.6 Sonnet', 'Gemini 3.1 Pro'],
+    premiumModels: ['GPT-5.5', 'Claude 4.6 Sonnet', 'Gemini 3.1 Pro', 'Grok'],
   },
   {
     tier: 'max',
@@ -48,7 +48,7 @@ export const PLANS: PlanDefinition[] = [
     standardQuota: '无限访问普通模型',
     premiumQuota: '无限访问高级模型',
     standardModels: ['Gemini 3 Flash', 'GPT-5.4 mini', 'Claude 4.5 Haiku'],
-    premiumModels: ['GPT-5.5', 'Claude 4.6 Sonnet', 'Gemini 3.1 Pro'],
+    premiumModels: ['GPT-5.5', 'Claude 4.6 Sonnet', 'Gemini 3.1 Pro', 'Grok'],
   },
 ];
 

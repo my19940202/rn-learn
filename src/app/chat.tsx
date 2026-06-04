@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ChatInput } from '@/components/chat/chat-input';
+import { ComplianceNoticeBanner } from '@/components/chat/compliance-notice-banner';
 import { ConversationHistory } from '@/components/chat/conversation-history';
 import { GuestModelBanner } from '@/components/chat/guest-model-banner';
 import { MessageBubble } from '@/components/chat/message-bubble';
@@ -37,6 +38,10 @@ import {
   type Conversation,
 } from '@/services/chat-api';
 import { OpenAISSEChatTransport } from '@/services/openai-sse-chat-transport';
+import {
+  hasSeenChatComplianceNotice,
+  markChatComplianceNoticeSeen,
+} from '@/utils/compliance-notice';
 import {
   clearGuestChatCount,
   getGuestChatCount,
@@ -91,6 +96,7 @@ export default function ChatScreen() {
   const conversationIdRef = useRef<string | null>(null);
   const { toastMessage, showToast } = useToast();
   const [guestLimitReached, setGuestLimitReached] = useState(false);
+  const [showComplianceNotice, setShowComplianceNotice] = useState(false);
 
   const refreshGuestLimit = useCallback(async (currentMessages: UIMessage[]) => {
     if (token) {
@@ -101,6 +107,20 @@ export default function ChatScreen() {
     const sessionCount = countUserMessages(currentMessages);
     setGuestLimitReached(Math.max(stored, sessionCount) >= GUEST_CHAT_LIMIT);
   }, [token]);
+
+  useEffect(() => {
+    void (async () => {
+      const seen = await hasSeenChatComplianceNotice();
+      if (!seen) {
+        setShowComplianceNotice(true);
+      }
+    })();
+  }, []);
+
+  const handleDismissComplianceNotice = useCallback(() => {
+    setShowComplianceNotice(false);
+    void markChatComplianceNoticeSeen();
+  }, []);
 
   useEffect(() => {
     const modelParam = params.model;
@@ -285,6 +305,9 @@ export default function ChatScreen() {
         </ThemedView>
 
         {!isAuthenticated && <GuestModelBanner />}
+        {showComplianceNotice && (
+          <ComplianceNoticeBanner onDismiss={handleDismissComplianceNotice} />
+        )}
 
         <KeyboardAvoidingView
           style={styles.keyboardView}

@@ -16,7 +16,14 @@ import { PremiumBadge } from '@/components/chat/premium-badge';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { SystemIcon } from '@/components/ui/system-icon';
-import { AVAILABLE_MODELS, formatModelShortName, getModelById } from '@/constants/models';
+import {
+  AVAILABLE_MODELS,
+  formatModelShortName,
+  getModelById,
+  PREMIUM_MODELS,
+  STANDARD_MODELS,
+  type ModelOption,
+} from '@/constants/models';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -27,6 +34,59 @@ type ModelPickerProps = {
   disabled?: boolean;
   onHistoryPress: () => void;
 };
+
+const MODEL_SECTIONS = [
+  { title: '普通模型', models: STANDARD_MODELS },
+  { title: '高级模型', models: PREMIUM_MODELS },
+] as const;
+
+type ModelRowProps = {
+  model: ModelOption;
+  selected: boolean;
+  locked: boolean;
+  onSelect: (modelId: string, requiresAuth: boolean) => void;
+};
+
+function ModelRow({ model, selected, locked, onSelect }: ModelRowProps) {
+  const theme = useTheme();
+
+  return (
+    <Pressable
+      onPress={() => onSelect(model.modelId, model.requiresAuth)}
+      style={({ pressed }) => [
+        styles.row,
+        selected && { backgroundColor: theme.backgroundSelected },
+        pressed && styles.pressed,
+      ]}>
+      <ModelIcon source={model.icon} size={32} selected={selected} locked={locked} />
+      <ThemedView style={styles.rowText}>
+        <View style={styles.titleRow}>
+          <ThemedText type="smallBold">{model.label}</ThemedText>
+          {model.isPremium && <PremiumBadge />}
+        </View>
+        {locked ? (
+          <ThemedText type="small" themeColor="textSecondary">
+            登录解锁
+          </ThemedText>
+        ) : model.description ? (
+          <ThemedText
+            type="small"
+            themeColor="textSecondary"
+            numberOfLines={selected ? 2 : 1}>
+            {model.description}
+          </ThemedText>
+        ) : (
+          <ThemedText type="small" themeColor="textSecondary">
+            标准额度
+          </ThemedText>
+        )}
+      </ThemedView>
+      {selected && (
+        <SystemIcon name="check" size={18} weight="semibold" color={theme.text} />
+      )}
+    </Pressable>
+  );
+}
 
 export function ModelPicker({
   value,
@@ -69,11 +129,7 @@ export function ModelPicker({
             disabled && styles.triggerDisabled,
             pressed && !disabled && styles.pressed,
           ]}>
-          <ModelIcon
-            source={currentModel.icon}
-            size={28}
-            premium={currentModel.isPremium}
-          />
+          <ModelIcon source={currentModel.icon} size={28} />
           <ThemedText type="subtitle" style={styles.triggerLabel}>
             {formatModelShortName(currentModel.modelId)}
           </ThemedText>
@@ -117,53 +173,25 @@ export function ModelPicker({
                 )}
 
                 <ScrollView bounces={false} style={styles.list}>
-                  {AVAILABLE_MODELS.map((model) => {
-                    const locked = !isAuthenticated && model.requiresAuth;
-                    const selected = model.modelId === value;
-
-                    return (
-                      <Pressable
-                        key={model.modelId}
-                        onPress={() => handleSelect(model.modelId, model.requiresAuth)}
-                        style={({ pressed }) => [
-                          styles.row,
-                          selected && { backgroundColor: theme.backgroundSelected },
-                          pressed && styles.pressed,
-                        ]}>
-                        <ModelIcon
-                          source={model.icon}
-                          size={32}
-                          selected={selected}
-                          locked={locked}
+                  {MODEL_SECTIONS.map((section) => (
+                    <ThemedView key={section.title} style={styles.section}>
+                      <ThemedText
+                        type="small"
+                        themeColor="textSecondary"
+                        style={styles.sectionTitle}>
+                        {section.title}
+                      </ThemedText>
+                      {section.models.map((model) => (
+                        <ModelRow
+                          key={model.modelId}
+                          model={model}
+                          selected={model.modelId === value}
+                          locked={!isAuthenticated && model.requiresAuth}
+                          onSelect={handleSelect}
                         />
-                        <ThemedView style={styles.rowText}>
-                          <View style={styles.titleRow}>
-                            <ThemedText type="smallBold">
-                              {formatModelShortName(model.modelId)}
-                            </ThemedText>
-                            {model.isPremium && <PremiumBadge />}
-                          </View>
-                          {locked ? (
-                            <ThemedText type="small" themeColor="textSecondary">
-                              登录解锁
-                            </ThemedText>
-                          ) : model.description ? (
-                            <ThemedText type="small" themeColor="textSecondary">
-                              {model.description}
-                            </ThemedText>
-                          ) : null}
-                        </ThemedView>
-                        {selected && (
-                          <SystemIcon
-                            name="check"
-                            size={18}
-                            weight="semibold"
-                            color={theme.text}
-                          />
-                        )}
-                      </Pressable>
-                    );
-                  })}
+                      ))}
+                    </ThemedView>
+                  ))}
                 </ScrollView>
               </ThemedView>
             </TouchableWithoutFeedback>
@@ -230,6 +258,16 @@ const styles = StyleSheet.create({
   },
   list: {
     paddingHorizontal: Spacing.two,
+  },
+  section: {
+    gap: Spacing.one,
+    marginBottom: Spacing.three,
+    backgroundColor: 'transparent',
+  },
+  sectionTitle: {
+    paddingHorizontal: Spacing.two,
+    paddingBottom: Spacing.half,
+    fontWeight: '600',
   },
   row: {
     flexDirection: 'row',

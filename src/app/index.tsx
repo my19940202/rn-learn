@@ -6,15 +6,21 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ModelIcon } from '@/components/chat/model-icon';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { AVAILABLE_MODELS } from '@/constants/models';
+import { HOME_FEATURED_MODELS } from '@/constants/models';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useBottomTabPadding } from '@/hooks/use-bottom-tab-padding';
 import { useTheme } from '@/hooks/use-theme';
 
+const VALUE_TAGS = [
+  { label: '便捷', hint: '免配置不折腾' },
+  { label: '多模型', hint: 'GPT / Claude / Gemini' },
+  { label: '合规自用', hint: '仅供个人学习研究' },
+] as const;
+
 const FEATURES = [
   '登录后解锁 ChatGPT、Claude、Gemini、Grok',
-  '统一接入海外模型，低成本按需使用',
+  '统一接入海外模型，一键使用不折腾',
 ];
 
 export default function HomeScreen() {
@@ -47,17 +53,26 @@ export default function HomeScreen() {
               AI Link
             </ThemedText>
             <ThemedText type="subtitle" themeColor="textSecondary" style={styles.tagline}>
-              低成本使用海外 AI
+              国内用户的海外 AI 工具箱
             </ThemedText>
           </ThemedView>
 
-          <ThemedText themeColor="textSecondary" style={styles.description}>
-            AI Link 帮你以更低成本访问 ChatGPT、Claude、Gemini、Grok 等海外大模型。
-            无需复杂配置，打开即用，适合日常问答、写作与灵感探索。
-          </ThemedText>
+          <View style={styles.tagRow}>
+            {VALUE_TAGS.map((tag) => (
+              <ThemedView
+                key={tag.label}
+                type="backgroundElement"
+                style={[styles.valueTag, { borderColor: theme.backgroundSelected }]}>
+                <ThemedText type="smallBold">{tag.label}</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary" style={styles.tagHint}>
+                  {tag.hint}
+                </ThemedText>
+              </ThemedView>
+            ))}
+          </View>
 
           <View style={styles.modelGrid}>
-            {AVAILABLE_MODELS.slice(0, 3).map((model) => {
+            {HOME_FEATURED_MODELS.map((model) => {
               const locked = !isAuthenticated && model.requiresAuth;
               return (
                 <Pressable
@@ -134,8 +149,23 @@ const styles = StyleSheet.create({
   tagline: {
     textAlign: 'center',
   },
-  description: {
-    lineHeight: 24,
+  tagRow: {
+    flexDirection: 'row',
+    // flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: Spacing.two,
+  },
+  valueTag: {
+    alignItems: 'center',
+    gap: 2,
+    paddingVertical: Spacing.two,
+    paddingHorizontal: Spacing.two,
+    borderRadius: Spacing.two,
+    borderWidth: StyleSheet.hairlineWidth,
+    minWidth: 50,
+  },
+  tagHint: {
+    fontSize: 11,
     textAlign: 'center',
   },
   modelGrid: {
@@ -148,10 +178,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.one,
-    paddingVertical: Spacing.three,
+    paddingVertical: Spacing.two,
     paddingHorizontal: Spacing.two,
-    borderRadius: Spacing.three,
-    width: 80,
+    borderRadius: Spacing.two,
+    width: 70,
   },
   modelLabel: {
     fontSize: 12,

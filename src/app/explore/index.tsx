@@ -410,6 +410,9 @@ export default function ProfileScreen() {
           </View>
 
           <View style={[styles.footer, { paddingBottom: bottomPadding }]}>
+            <ThemedText type="small" themeColor="textSecondary" style={styles.complianceHint}>
+              登录即表示同意用户协议。对话数据可能经海外 API 传输，请自行确保使用合规。
+            </ThemedText>
             <Link href="/explore/user-agreement" asChild>
               <Pressable hitSlop={12} style={styles.agreementPressable}>
                 <ThemedText style={styles.agreementLink}>用户协议</ThemedText>
@@ -639,6 +642,12 @@ const styles = StyleSheet.create({
   footer: {
     alignItems: 'center',
     paddingTop: Spacing.four,
+    gap: Spacing.two,
+  },
+  complianceHint: {
+    textAlign: 'center',
+    lineHeight: 20,
+    paddingHorizontal: Spacing.two,
   },
   agreementPressable: {
     paddingVertical: Spacing.two,
