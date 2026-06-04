@@ -46,7 +46,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     description: '更强推理与长上下文',
   },
   {
-    label: 'Claude Sonnet',
+    label: 'Claude 4.6',
     provider: 'anthropic',
     modelId: 'anthropic/claude-sonnet-4.6',
     icon: require('@/assets/images/tabIcons/claude.png'),
@@ -55,7 +55,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     description: '复杂任务与代码',
   },
   {
-    label: 'Gemini Pro',
+    label: 'Gemini 3.1 Pro',
     provider: 'google',
     modelId: 'google/gemini-3.1-pro',
     icon: require('@/assets/images/tabIcons/gemini.png'),

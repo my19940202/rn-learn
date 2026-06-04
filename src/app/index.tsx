@@ -20,7 +20,7 @@ const VALUE_TAGS = [
 
 const FEATURES = [
   '登录后解锁 ChatGPT、Claude、Gemini、Grok',
-  '统一接入海外模型，一键使用不折腾',
+  '统一访问海外模型，一键使用不折腾',
 ];
 
 export default function HomeScreen() {
@@ -49,9 +49,7 @@ export default function HomeScreen() {
               style={styles.logo}
               contentFit="contain"
             />
-            <ThemedText type="title" style={styles.title}>
-              AI Link
-            </ThemedText>
+            <ThemedText type="title" style={styles.title}>AI 汇 </ThemedText>
             <ThemedText type="subtitle" themeColor="textSecondary" style={styles.tagline}>
               国内用户的海外 AI 工具箱
             </ThemedText>

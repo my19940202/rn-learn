@@ -72,12 +72,12 @@ export function formatQuotaUsage(
   limits: PlanLimits,
 ): string {
   if (limits.unlimited) {
-    return '当前套餐不限量';
+    return '当前套餐不限量使用';
   }
 
   if (tier === 'free') {
     const cap = limits.daily_standard ?? 10;
-    return `今日普通模型：${usage.daily_standard_used}/${cap}`;
+    return `今日普通模型使用额度：${usage.daily_standard_used}/${cap}`;
   }
 
   const standardCap = limits.monthly_standard ?? 0;

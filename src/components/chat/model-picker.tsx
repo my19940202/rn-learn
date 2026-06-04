@@ -272,9 +272,9 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.three,
-    paddingHorizontal: Spacing.two,
-    paddingVertical: Spacing.two,
+    gap: Spacing.two,
+    paddingHorizontal: Spacing.one,
+    paddingVertical: Spacing.one,
     borderRadius: Spacing.three,
     minHeight: 50,
   },

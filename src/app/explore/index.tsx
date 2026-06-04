@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
-import { Link, useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { Link, useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -42,7 +42,8 @@ const FALLBACK_LIMITS = {
 export default function ProfileScreen() {
   const bottomPadding = useBottomTabPadding();
   const router = useRouter();
-  const { user, token, isAuthenticated, login, logout, updateUser } = useAuth();
+  const { user, token, isAuthenticated, login, logout, updateUser, refreshUser } =
+    useAuth();
   const [account, setAccount] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -66,6 +67,13 @@ export default function ProfileScreen() {
   );
   const displayName = user?.name?.trim() || '用户';
   const avatarFallback = displayName.slice(0, 1).toUpperCase();
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!isAuthenticated) return;
+      void refreshUser().catch(() => {});
+    }, [isAuthenticated, refreshUser]),
+  );
 
   const handleLogin = async () => {
     if (!account.trim() || !password) {

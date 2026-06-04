@@ -1,18 +1,18 @@
 {
   "expo": {
-    "name": "AI-Link",
-    "slug": "ailink",
-    "version": "1.0.2",
+    "name": "AI 汇",
+    "slug": "ai-hui",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "ailink",
+    "scheme": "ai-hui",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.anonymous.ailink"
+      "bundleIdentifier": "com.anonymous.ai-hui"
     },
     "android": {
-      "softwareKeyboardLayoutMode": "resize",
+      "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -20,7 +20,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.ailink"
+      "package": "com.anonymous.aihui"
     },
     "web": {
       "output": "static",
@@ -31,7 +31,7 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "允许 AI-Link 访问你的相册以上传头像",
+          "photosPermission": "允许 AI 汇 访问你的相册以上传头像",
           "cameraPermission": false,
           "microphonePermission": false
         }

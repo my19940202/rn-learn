@@ -1,7 +1,7 @@
 {
-  "name": "rn-learn",
+  "name": "ai-hui",
   "main": "expo-router/entry",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "dependencies": {
     "@ai-sdk/react": "^3.0.193",
     "@expo/vector-icons": "^15.1.1",

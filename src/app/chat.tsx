@@ -26,10 +26,9 @@ import {
   LOGGED_IN_DEFAULT_MODEL,
   getModelById,
 } from '@/constants/models';
-import { Spacing, NativeTabBarHeight } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
-import { useBottomTabPadding } from '@/hooks/use-bottom-tab-padding';
-import { useKeyboardVisible } from '@/hooks/use-keyboard-visible';
+import { useChatInputBottomPadding } from '@/hooks/use-chat-input-padding';
 import { useToast } from '@/hooks/use-toast';
 import {
   fetchConversationDetail,
@@ -77,19 +76,7 @@ function countUserMessages(messages: UIMessage[]) {
 }
 
 export default function ChatScreen() {
-  const bottomPadding = useBottomTabPadding(Spacing.one);
-  const { visible: keyboardVisible } = useKeyboardVisible();
-
-  const inputPaddingBottom = useMemo(() => {
-    if (Platform.OS === 'ios') {
-      return keyboardVisible ? 0 : bottomPadding;
-    }
-    if (!keyboardVisible) {
-      return bottomPadding;
-    }
-    // resize 模式下窗口已随键盘收缩，只需再避开仍叠在上方的 Tab Bar
-    return NativeTabBarHeight + Spacing.three;
-  }, [keyboardVisible, bottomPadding]);
+  const inputPaddingBottom = useChatInputBottomPadding(Spacing.one);
   const router = useRouter();
   const { token, user } = useAuth();
   const isAuthenticated = !!token;
