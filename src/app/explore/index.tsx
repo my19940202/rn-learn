@@ -163,7 +163,7 @@ export default function ProfileScreen() {
               <ThemedText type="subtitle" style={styles.profileName}>
                 {displayName}
               </ThemedText>
-              <ThemedText themeColor="textSecondary">{user.email}</ThemedText>
+              <ThemedText themeColor="textSecondary">邮箱地址: {user.email}</ThemedText>
               <ThemedText themeColor="textSecondary" type="small">
                 创建时间：{formatCreatedAt(user.created_at)}
               </ThemedText>
@@ -243,29 +243,20 @@ export default function ProfileScreen() {
                         ) : null}
                       </View>
                       <ThemedText style={styles.planPrice}>{plan.price}</ThemedText>
-                      {plan.priceNote ? (
-                        <ThemedText type="small" themeColor="textSecondary">
-                          {plan.priceNote}
-                        </ThemedText>
-                      ) : null}
 
                       <View style={styles.planSection}>
                         <ThemedText type="smallBold">{plan.standardQuota}</ThemedText>
-                        {plan.standardModels.map((modelName) => (
-                          <ThemedText key={modelName} type="small" themeColor="textSecondary">
-                            {`\u2022 ${modelName}`}
-                          </ThemedText>
-                        ))}
+                        <ThemedText type="small" themeColor="textSecondary">
+                          {plan.standardModels.join(', ')}
+                        </ThemedText>
                       </View>
 
                       {plan.premiumQuota ? (
                         <View style={styles.planSection}>
                           <ThemedText type="smallBold">{plan.premiumQuota}</ThemedText>
-                          {plan.premiumModels?.map((modelName) => (
-                            <ThemedText key={modelName} type="small" themeColor="textSecondary">
-                              {`\u2022 ${modelName}`}
-                            </ThemedText>
-                          ))}
+                          <ThemedText type="small" themeColor="textSecondary">
+                            {plan.premiumModels?.join(', ') ?? ''}
+                          </ThemedText>
                         </View>
                       ) : null}
 
@@ -610,7 +601,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoutButton: {
-    marginTop: Spacing.one,
+    marginTop: Spacing.two,
     backgroundColor: '#FEE2E2',
     borderRadius: 8,
     paddingVertical: 14,

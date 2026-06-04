@@ -26,7 +26,7 @@ import {
   LOGGED_IN_DEFAULT_MODEL,
   getModelById,
 } from '@/constants/models';
-import { Spacing } from '@/constants/theme';
+import { Spacing, NativeTabBarHeight } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useBottomTabPadding } from '@/hooks/use-bottom-tab-padding';
 import { useKeyboardVisible } from '@/hooks/use-keyboard-visible';
@@ -79,6 +79,17 @@ function countUserMessages(messages: UIMessage[]) {
 export default function ChatScreen() {
   const bottomPadding = useBottomTabPadding(Spacing.one);
   const { visible: keyboardVisible } = useKeyboardVisible();
+
+  const inputPaddingBottom = useMemo(() => {
+    if (Platform.OS === 'ios') {
+      return keyboardVisible ? 0 : bottomPadding;
+    }
+    if (!keyboardVisible) {
+      return bottomPadding;
+    }
+    // resize 模式下窗口已随键盘收缩，只需再避开仍叠在上方的 Tab Bar
+    return NativeTabBarHeight + Spacing.three;
+  }, [keyboardVisible, bottomPadding]);
   const router = useRouter();
   const { token, user } = useAuth();
   const isAuthenticated = !!token;
@@ -92,20 +103,21 @@ export default function ChatScreen() {
   const [loadedMessages, setLoadedMessages] = useState<UIMessage[] | null>(null);
   const listRef = useRef<FlatList<UIMessage>>(null);
   const scrollPendingRef = useRef(false);
+  const lastScrolledCountRef = useRef(0);
+  const lastContentScrollRef = useRef(0);
   const appliedModelParam = useRef<string | null>(null);
   const conversationIdRef = useRef<string | null>(null);
   const { toastMessage, showToast } = useToast();
   const [guestLimitReached, setGuestLimitReached] = useState(false);
   const [showComplianceNotice, setShowComplianceNotice] = useState(false);
 
-  const refreshGuestLimit = useCallback(async (currentMessages: UIMessage[]) => {
+  const refreshGuestLimit = useCallback(async (sessionUserCount: number) => {
     if (token) {
       setGuestLimitReached(false);
       return;
     }
     const stored = await getGuestChatCount();
-    const sessionCount = countUserMessages(currentMessages);
-    setGuestLimitReached(Math.max(stored, sessionCount) >= GUEST_CHAT_LIMIT);
+    setGuestLimitReached(Math.max(stored, sessionUserCount) >= GUEST_CHAT_LIMIT);
   }, [token]);
 
   useEffect(() => {
@@ -200,19 +212,25 @@ export default function ChatScreen() {
     [],
   );
 
-  const initialMessages = isAuthenticated
-    ? [LOGGED_IN_WELCOME_MESSAGE]
-    : [GUEST_WELCOME_MESSAGE];
+  const defaultMessages = useMemo(
+    () => (isAuthenticated ? [LOGGED_IN_WELCOME_MESSAGE] : [GUEST_WELCOME_MESSAGE]),
+    [isAuthenticated],
+  );
 
   const { messages, sendMessage, status, error } = useChat({
     id: chatSessionId,
     transport,
-    messages: loadedMessages ?? initialMessages,
+    messages: loadedMessages ?? defaultMessages,
   });
 
+  const userMessageCount = useMemo(
+    () => countUserMessages(messages),
+    [messages],
+  );
+
   useEffect(() => {
-    void refreshGuestLimit(messages);
-  }, [messages, refreshGuestLimit]);
+    void refreshGuestLimit(userMessageCount);
+  }, [userMessageCount, refreshGuestLimit]);
 
   const loading = status === 'streaming' || status === 'submitted';
 
@@ -220,10 +238,24 @@ export default function ChatScreen() {
     if (scrollPendingRef.current) return;
     scrollPendingRef.current = true;
     requestAnimationFrame(() => {
-      listRef.current?.scrollToEnd({ animated: true });
+      listRef.current?.scrollToEnd({ animated: Platform.OS === 'ios' });
       scrollPendingRef.current = false;
     });
   }, []);
+
+  useEffect(() => {
+    if (messages.length === lastScrolledCountRef.current) return;
+    lastScrolledCountRef.current = messages.length;
+    scrollToEnd();
+  }, [messages.length, scrollToEnd]);
+
+  const handleContentSizeChange = useCallback(() => {
+    if (!loading) return;
+    const now = Date.now();
+    if (now - lastContentScrollRef.current < 120) return;
+    lastContentScrollRef.current = now;
+    scrollToEnd();
+  }, [loading, scrollToEnd]);
 
   const handleSend = useCallback(async () => {
     const trimmed = input.trim();
@@ -251,7 +283,6 @@ export default function ChatScreen() {
     isAuthenticated,
     loading,
     messages,
-    refreshGuestLimit,
     scrollToEnd,
     sendMessage,
     showToast,
@@ -339,21 +370,11 @@ export default function ChatScreen() {
               ) : null
             }
             contentContainerStyle={styles.messageList}
-            onContentSizeChange={scrollToEnd}
+            onContentSizeChange={loading ? handleContentSizeChange : undefined}
             keyboardShouldPersistTaps="handled"
           />
 
-          <ThemedView
-            style={{
-              paddingBottom:
-                Platform.OS === 'android'
-                  ? keyboardVisible
-                    ? Spacing.four
-                    : bottomPadding
-                  : keyboardVisible
-                    ? 0
-                    : bottomPadding,
-            }}>
+          <ThemedView style={{ paddingBottom: inputPaddingBottom }}>
             <ChatInput
               value={input}
               onChangeText={setInput}

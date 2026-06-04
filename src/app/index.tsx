@@ -171,8 +171,8 @@ const styles = StyleSheet.create({
   modelGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'center',
     gap: Spacing.three,
+    justifyContent: 'space-between'
   },
   modelCard: {
     alignItems: 'center',

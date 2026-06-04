@@ -62,4 +62,6 @@ export const Spacing = {
 } as const;
 
 export const BottomTabInset = Platform.select({ ios: 20, android: 20, web: 72 }) ?? 0;
+/** NativeTabs 栏本身高度（不含安全区），用于键盘弹出时为输入框留白 */
+export const NativeTabBarHeight = Platform.select({ ios: 49, android: 56, web: 72 }) ?? 56;
 export const MaxContentWidth = 800;
