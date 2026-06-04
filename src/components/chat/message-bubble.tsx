@@ -135,5 +135,6 @@ const styles = StyleSheet.create({
   text: {
     lineHeight: 22,
     flexShrink: 0,
+    width: '100%',
   },
 });
